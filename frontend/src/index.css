@@ -1,1 +1,10 @@
+@font-face {
+    font-family:Roboto;
+    src: url('./fonts/Roboto_Condensed-BlackItalic.ttf');
+}
+
 @import 'tailwindcss';
+
+@theme{
+    --font-roboto:Roboto,'Segoe UI';
+}
