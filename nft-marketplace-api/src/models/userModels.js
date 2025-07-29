@@ -6,6 +6,13 @@ const { pool } = config;
         getUserByWallet(walletAddress)
         getUserById(id)
         updateUserProfile details
+
+      i. users(apart from the admin) need wallet address:
+      i. wallet address is needed to acess their collections/nfts
+      ii. wallet address is needed to acess key endpoints: 
+              1. user dashboard (containing nfts/collections and performance)
+              2. mint/upload to create nfts
+              3. setting: updating user infos 
     */
     // create a user 
     export const createUser = async(username, email, walletAddr) => {
@@ -41,4 +48,50 @@ const { pool } = config;
             console.error(`Error fetching user by wallet address ${error}`);
             throw error; // re-throw so the controller can handle 
         }     
+    }
+
+// get user by id 
+export const getUserById = async (id) =>{
+    try {
+        const getUserIdQuery = `SELECT * 
+                                FROM users
+                                WHERE id = $1`;
+        const result = await pool.query(getUserIdQuery, [id]);
+        return result.rows[0];  
+    } catch (error) {
+        throw error
+        }
+    }
+
+//--------------------- UPDATE USER INFO --------------------------
+export const updateUserInfo = async (id,name,email) =>{ // dynamic update 
+    try {
+        let fields_to_update = []; 
+        let value_for_fields = [];
+        let param_index = 1; //tracks $1, $2, etc., for parameterized queries.
+
+        // add name query if name exist and add value
+        if (name !== undefined) {
+            fields_to_update.push(`username = $${param_index}`);
+            value_for_fields.push(name);
+            param_index++;
+        }
+        //add email query if email exist and add it's value
+        if (email !== undefined) {
+            fields_to_update.push(`email = $${param_index}`);
+            value_for_fields.push(email);
+            param_index++;
+        }
+        const getUserIdQuery = `UPDATE users
+                                SET
+                                  ${fields_to_update.join(',')}
+                                WHERE id = $${param_index}
+                                RETURNING * `;
+        //add id
+        value_for_fields.push(id);
+        const result = await pool.query(getUserIdQuery,value_for_fields);
+        return result.rows[0];  
+    } catch (error) {
+        throw error
+        }
     }

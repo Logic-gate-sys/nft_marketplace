@@ -32,39 +32,117 @@ export const createNft = async (blobBody, original_name, file_mime, title, token
 }
 
 export const getAllNfts = async () => {
-  const nft_query = `SELECT * FROM nfts `;
-  const result = await pool.query(nft_query);
-  const allNFTs = result.rows;  // ipfs_hash contains all urls for each uploaded nft
-  return allNFTs;
+  try {
+    const nft_query = `SELECT * FROM nfts `;
+    const result = await pool.query(nft_query);
+    const allNFTs = result.rows;  // ipfs_hash contains all urls for each uploaded nft
+    return allNFTs;
+  } catch (error) {
+    throw error;
+  }
 }
 
 //get a specific nft
 export const getNFTById = async (id) => {
-  const get_query = `SELECT *
+  try {
+    const get_query = `SELECT *
                      FROM nfts
                      WHERE nfts.id = $1 `;
-  const result = await pool.query(get_query, [id]);
-  const nft = result.rows[0];// first one returned
-  return nft;
+    const result = await pool.query(get_query, [id]);
+    const nft = result.rows[0];// first one returned
+    return nft;
+  } catch (err) {
+    throw err;
+  }
 }
 
 // delete and nft:
 export const deleteNFTById = async (id) => {
-  const del_query = `DELETE FROM nfts
+  try {
+    const del_query = `DELETE FROM nfts
                      WHERE nfts.id = $1 
                      RETURNING *`
-  const del_result = await pool.query(del_query, [id]);
-  console.log(del_result);
-  return del_result;
+    const del_result = await pool.query(del_query, [id]);
+    console.log(del_result);
+    return del_result;
+  } catch (err) {
+    throw err;
+  }
 }
 
-//transfer ownership of nft:
-export const transferNFTOwnership = async (new_owner_address,id) => {
-  const transfer_query = `UPDATE nfts
-                          SET owner_id = $1
-                          WHERE id = $2
-                           RETURNING *`;
-  const transfer_result =await pool.query(transfer_query, [new_owner_address,id]);
-  console.log(transfer_result);
-  return transfer_result;
+/* **Browse/Filter NFTs**
+* Search by name, price range, owner, status, etc.
+*/
+
+//get nft by name:
+export const getNFTByTitle = async (title) => {
+  try {
+    const get_query = `SELECT *
+                     FROM nfts
+                     WHERE title = $1 `;
+    const result = await pool.query(get_query, [title]);
+    const nft = result.rows[0];// first one returned
+    return nft;
+  } catch (err) {
+    throw err;
+  }
 }
+
+//get nft by owner
+export const getNFTByOwner = async (_owner_id) => {
+  try {
+    const get_query =`SELECT *
+                     FROM nfts
+                     WHERE owner_id = $1 `;
+    const result = await pool.query(get_query, [_owner_id]);
+    const nft = result.rows;
+    return nft;
+  } catch (err) {
+    throw err;
+  }
+}
+
+//create an nft collection
+export const createNFTCollection = async (name,description,owner_id) => {
+  try {
+    const get_query =`INSERT INTO collections (name, description, owner_id)*
+                     VALUES($1, $2, $3)
+                     RETURNING *`;
+    const result = await pool.query(get_query, [name,description, owner_id]);
+    const nft = result.rows[0];
+    return nft;
+  } catch (err) {
+    throw err;
+  }
+}
+
+//get all nfts in a collection
+export const getNFTByCollection_Id = async (collection_Id) => {
+  try {
+    const get_query =`SELECT *
+                     FROM nfts
+                     WHERE col_id = $1 `;
+    const result = await pool.query(get_query, [collection_Id]);
+    const nft = result.rows;
+    return nft;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// owner list nfts by categoris
+export const getNFTByStatus = async (status) => {
+  try {
+    const get_query =`SELECT *
+                     FROM nfts
+                     WHERE status = $1 `;
+    const result = await pool.query(get_query, [status]);
+    const nft = result.rows;
+    return nft;
+  } catch (err) {
+    throw err;
+  }
+}
+
+
+

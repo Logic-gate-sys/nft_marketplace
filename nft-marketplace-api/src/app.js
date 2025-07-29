@@ -1,5 +1,4 @@
 import express  from 'express'; //CommonJS module
-import { config } from 'dotenv';
 import userRoutes from './routes/userRoutes.js';
 import nftRouter from './routes/nftRoutes.js';
 
@@ -7,10 +6,6 @@ import nftRouter from './routes/nftRoutes.js';
 const app = express();
 app.use(express.json());
 
-
-app.get('/', (req, res) => {
-  res.json({message: 'connections sucessful'})
-});
 
 //user endpoints
 app.use('/api/users', userRoutes);

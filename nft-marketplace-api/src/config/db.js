@@ -4,7 +4,7 @@ import { config } from 'dotenv';
 import { PinataSDK } from 'pinata';
 config();
 
-//Pinata configuration
+// Pinata configuration
 const pinata = new PinataSDK({
   pinataJwt:process.env.PINATA_JWT,
   pinataGateway: process.env.GATEWAY_DOMAIN,
@@ -17,6 +17,7 @@ const pool = new Pool({
   password: process.env.PASSWORD,
   host:process.env.HOST
 })
+
 
 pool.on('connect', () => {
     console.log(`Success!, Connection to Postgres sucessful`);
