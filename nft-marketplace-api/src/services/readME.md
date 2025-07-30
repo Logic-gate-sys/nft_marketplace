@@ -37,7 +37,7 @@ III. Handle external API calls (IPFS, payments).
 * Interact with smart contract (on-chain mint) **OR** store in database for off-chain testing.
 * Save NFT record in Postgres with `status = 'NEW'`.
 
-  **List NFT for Sale**
+✔ **List NFT for Sale**
 * Only allow if user is owner.
 * Update `status = 'LISTED'`.
 * Set price, currency, expiration.
@@ -97,9 +97,9 @@ III. Handle external API calls (IPFS, payments).
 * `nftService.buyNFT(nftId, buyerId)`
 * `transactionService.getTransactionsForUser(userId)`
 
-**Next Steps / Best Practices**
+** Next Steps / Best Practices **
 
-✅ **Plan your endpoints:**
+✅ ** Plan your endpoints: **
 
 * `POST /auth/signup`
 * `POST /auth/login`

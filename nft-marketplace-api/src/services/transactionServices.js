@@ -9,10 +9,13 @@ Change status to 'NEW'.
 Wrap in a transaction so both happen together.
 */
 
+//transfering nft ownership on postgres and ipfs
 export const transferNFTOwnership = async (new_owner_address, id) => {
 
-  const client = await pool.connect(); // get a dedicated client
+  // logic to transfer ownership on ipfs here < -- 
+  
 
+  const client = await pool.connect(); // get a dedicated client
   try {
     // Start transaction
     await client.query('BEGIN');
@@ -60,6 +63,7 @@ export const transferNFTOwnership = async (new_owner_address, id) => {
     client.release();
   }
 };
+
 
 /*
 ✅ Updating status automatically:

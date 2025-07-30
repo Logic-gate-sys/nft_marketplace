@@ -1,4 +1,4 @@
-import { createNft, getAllNfts, getNFTById, deleteNFTById } from '../models/nftModels.js';
+import { createNft, getAllNfts, getNFTById, deleteNFTById,getAllNTFsMintedByUserId,getAllNTFsBoughtByUserId,getAllNTFsSoldByUserId } from '../models/nftModels.js';
 import { transferNFTOwnership } from '../services/transactionServices.js';
 
 
@@ -56,7 +56,6 @@ export const delete_nft_byId = async (req, res, next) => {
     }
 }
 
-
 /* 
 Selling nft: an nft should only be sold by the same user once:
   i. This is achieved by ensuring that nft transfer only occur when status of nft is not CALCULATING
@@ -72,4 +71,41 @@ export const transfer_nft_ownership = async (req, res, next) => {
         next(error);
     }
 }
+
 //--------------------- USERS COLLECTIONS AND NFTS ----------------------
+
+export const get_users_nfts_minted = async (req, res, next) => {
+    try {
+        const { wallet } = req.params;
+        const result = await getAllNTFsMintedByUserId( wallet);
+        if (result.length === 0) res.status(404).json({ message: 'User has no minted NFTs' });
+        res.status(201).json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+
+export const get_users_nfts_sold = async (req, res, next) => {
+    try {
+        const { wallet } = req.params;
+        const result = await getAllNTFsSoldByUserId( wallet);
+        if (result.length === 0) res.status(404).json({ message: 'User has no sold NFTs' });
+        res.status(201).json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const get_users_nfts_bought = async (req, res, next) => {
+    try {
+        const { wallet } = req.params;
+        const result = await getAllNTFsMintedByUserId( wallet);
+        if (result.length === 0) res.status(404).json({ message: 'User bought NFTs' });
+        res.status(201).json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+

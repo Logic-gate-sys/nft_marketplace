@@ -145,4 +145,56 @@ export const getNFTByStatus = async (status) => {
 }
 
 
+//--------------------------------- all nfts bought /minted or sold by a user --------------------------------- 
+
+// all minted nfts by user 
+export const getAllNTFsMintedByUserId = async (id, wallet) => {
+   try {
+    const get_query = `SELECT *
+                     FROM transactions
+                     WHERE type = $1
+                     AND to_ = $3
+                     ORDER BY created_at  DESC `;
+    const result = await pool.query(get_query, ['MINT',wallet]);
+    const nft = result.rows;
+    return nft;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// all sold nfts by user 
+export const getAllNTFsSoldByUserId = async (id,wallet) => {
+   try {
+    const get_query = `SELECT *
+                     FROM transactions
+                     WHERE type = $1
+                     AND from_ = $3
+                     ORDER BY created_at  DESC `;
+    const result = await pool.query(get_query, ['SELL', wallet]);
+    const nft = result.rows;
+    return nft;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// all sold nfts by user 
+export const getAllNTFsBoughtByUserId = async (id,wallet) => {
+   try {
+     const get_query = ` 
+                     SELECT *
+                     FROM transactions
+                     WHERE type = $1
+                     AND to_ = $3
+                     ORDER BY created_at  DESC `;
+    const result = await pool.query(get_query, ['BUY', wallet]);
+    const nft = result.rows;
+    return nft;
+  } catch (err) {
+    throw err;
+  }
+}
+
+
 
