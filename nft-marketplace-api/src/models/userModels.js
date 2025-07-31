@@ -15,10 +15,11 @@ const { pool } = config;
               3. setting: updating user infos 
     */
     // create a user 
-    export const createUser = async(username, email, walletAddr) => {
-        const pg_query = `INSERT INTO users(username,email,wallet_address)
-                        VALUE($1,$2,$3) RETURNING *`
-        const result = await pool.query(pg_query, [username, email, walletAddr]);
+    export const createUser = async( walletAddr) => {
+        const pg_query = `INSERT INTO users(wallet_address)
+                        VALUE($1,$2,$3)
+                         RETURNING *`
+        const result = await pool.query(pg_query, [walletAddr]);
         return result.rows[0] // returns the first row of the returned object 
     }
 
@@ -94,4 +95,21 @@ export const updateUserInfo = async (id,name,email) =>{ // dynamic update
     } catch (error) {
         throw error
         }
+}
+    
+// Nonce connected with wallet connect 
+ //get user by their wallet_address:
+    export const storeNonce = async (walletAddr, message) => {
+        try {
+            const nonceQuery =
+                `INSERT INTO users (wallet_address, nonce) 
+                 VALUES ($1, $2)
+                 ON CONFLICT (wallet_address) DO UPDATE SET nonce = $2
+                 RETURNING *`;
+        const result = await  pool.query(nonceQuery, [walletAddr, message]);
+            return result.rows[0]; // return update or create row
+        } catch (error) {
+            console.error(`Error fetching user by wallet address ${error}`);
+            throw error; // re-throw so the controller can handle 
+        }     
     }

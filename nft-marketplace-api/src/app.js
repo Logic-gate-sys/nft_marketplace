@@ -1,9 +1,10 @@
 import express  from 'express'; //CommonJS module
 import userRoutes from './routes/userRoutes.js';
 import nftRouter from './routes/nftRoutes.js';
-
+import cors from 'cors';
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 

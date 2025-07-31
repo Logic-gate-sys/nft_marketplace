@@ -18,3 +18,12 @@ exports.authenticate = (req, res, next) => {
     res.status(403).json({ message: 'Invalid token' });
   }
 };
+
+
+/*  
+ ------ Protected routes :
+ 1. minting nfts - only avaible upon login 
+ 2. profile: useranme, email updating - must be logedIn
+ 3. selling/buying nfts -- must be logged in 
+
+*/

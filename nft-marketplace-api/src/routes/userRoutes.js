@@ -1,15 +1,19 @@
 import express from "express";
 const { Router } = express;
-import { createUser, getAllUser, getUserByAddr,getUserById,updateUserInfo,login} from '../controllers/userController.js';
+import { getAllUser, getUserById, updateUserInfo, wallet_login,getNonce } from '../controllers/userController.js';
+
 
 
 const userRouter = Router();
 
-userRouter.post('/register', createUser);
-userRouter.post('/login', login);
+userRouter.post('/wallet_connect', wallet_login);
 userRouter.patch('/:id', updateUserInfo);
 userRouter.get('/', getAllUser);
-// userRouter.get('/:walletAddr', getUserByAddr);
-userRouter.get('/:id', getUserById)
+userRouter.get('/nonce', getNonce); // nonce for wallet message
+userRouter.get('/:id', getUserById);
+
+
+
+
 
 export default userRouter;

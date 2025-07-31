@@ -3,45 +3,53 @@ import {
     createUser as createUserModel, getAllUsers as getAllUsersModel,
     getUserByWalletAddr as getUserByAddrModel,
     getUserById as getUserByIdModel,
-    updateUserInfo as updateUserInfoModel
+    updateUserInfo as updateUserInfoModel,
+    storeNonce
 } from '../models/userModels.js';
 
+import { ethers } from 'ethers'
 import { signToken } from '../util/jwt.js';
 
 
 
+// GET /nonce?address=0x123...
+export const getNonce = async (req, res) => {
+  const address = req.query.address?.toLowerCase();
+  if (!address) return res.status(400).json({ error: "Wallet address required" });
 
-//create user controller
-export const createUser = async (req, res, next) => {
-    try {
-        const { username, email, walletAddr } = req.body;
-        const user= await createUserModel(username, email, walletAddr);
-        const token = signToken(user);
-        res.status(201).json({ token, user: { id: user.id, name: user.name, wallet: user.wallet_address } });
-    } catch(error) {
-        next(error);
+  const message = `Sign this message to login: ${Date.now()}`;
+
+  try {
+    const query = await storeNonce(address, message);
+
+    if (!query) {
+      return res.status(404).json({ error: 'Nonce not effected' });
     }
-}
+    return res.json({ message });
+  } catch (error) {
+    console.error("Error in getNonce:", error);
+    return res.status(500).json({ error: 'Server error while generating nonce' });
+  }
+};
 
 //login in user:
-export const login = async (req, res, next) => {
+export const wallet_login = async (req, res, next) => {
   try {
-    const {address} = req.body;
-    const user = await getUserByAddrModel(address);
+      const { address, message, signature } = req.body;
+      if (!address || !message || !signature) res.status(404).json({ error: 'Address, or Message or Signature is wrong' });
+      const lowerAddress = address.toLowerCase();
+      const recoveredAddress = ethers.verifyMessage(message,signature).toLowerCase();
+      if (lowerAddress !== recoveredAddress) {
+          res.status(404).json({ error: 'Invalid wallet address' });
+      }
+      const user = await getUserByAddrModel(lowerAddress);
       if (!user) {
+          //if user does not exist , create:
           return res.status(404).json({ message: 'User not found' });
       }
       const token = signToken(user);
       // return token to client
-      res.json({
-          token,
-          user:
-          {
-              id: user.id,
-              username: user.username,
-              email:user.email
-          }
-      });
+      res.json({token, success:true });
   }catch (error) {
       next(error);
   }
