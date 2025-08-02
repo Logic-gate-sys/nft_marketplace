@@ -11,7 +11,7 @@ FUNCTIONS THAT THE NFT MODELS MUST PERFORM
   6. Get details of an nft
 
 */
-export const createNft = async (blobBody, original_name, file_mime, title, token_id, owner_id,type) => { // what type of collection is it
+export const createNft = async (blobBody, original_name, file_mime, title, /*token_id,*/ owner_id,/*collection_id*/) => { // what type of collection is it
   const nft_query = `INSERT INTO nfts (title, ipfs_url, token_id, owner_id,col_id)
                   VALUES($1,$2,$3,$4,$5)
                  RETURNING * `
@@ -19,9 +19,10 @@ export const createNft = async (blobBody, original_name, file_mime, title, token
     const file = new File([blobBody], original_name, { type: file_mime });
     const upload = await pinata.upload.public.file(file); //upload to pinata
     const hashed_url = upload['cid'];
+    //<----- token id should come fron pinata after minting
     console.log(upload);
       try {
-        const result = await pool.query(nft_query, [title, hashed_url, token_id, owner_id,type]);
+        const result = await pool.query(nft_query, [title, hashed_url, /*token_id,*/ owner_id,/*collection_id*/]);
         return result.rows[0];
       } catch (error) {
         console.error(error);
@@ -147,54 +148,39 @@ export const getNFTByStatus = async (status) => {
 
 //--------------------------------- all nfts bought /minted or sold by a user --------------------------------- 
 
-// all minted nfts by user 
-export const getAllNTFsMintedByUserId = async (id, wallet) => {
-   try {
-    const get_query = `SELECT *
-                     FROM transactions
-                     WHERE type = $1
-                     AND to_ = $3
-                     ORDER BY created_at  DESC `;
-    const result = await pool.query(get_query, ['MINT',wallet]);
-    const nft = result.rows;
-    return nft;
+export const getAllNFTsByUserStatus = async (wallet, status) => {
+  try {
+    let query = `
+      SELECT *
+      FROM transactions
+      WHERE type = $1
+    `;
+    let values = [null, wallet];
+
+    // Decide what type and direction to use based on status
+    switch (status) {
+      case 'MINTED':
+        values[0] = 'MINT';
+        query += ` AND to_ = $2`;
+        break;
+      case 'SOLD':
+        values[0] = 'SELL';
+        query += ` AND from_ = $2`;
+        break;
+      case 'BOUGHT':
+        values[0] = 'BUY';
+        query += ` AND to_ = $2`;
+        break;
+      default:
+        throw new Error('Invalid status type. Must be MINTED, SOLD, or BOUGHT');
+    }
+
+    query += ` ORDER BY created_at DESC`;
+
+    const result = await pool.query(query, values);
+    return result.rows;
+
   } catch (err) {
     throw err;
   }
-}
-
-// all sold nfts by user 
-export const getAllNTFsSoldByUserId = async (id,wallet) => {
-   try {
-    const get_query = `SELECT *
-                     FROM transactions
-                     WHERE type = $1
-                     AND from_ = $3
-                     ORDER BY created_at  DESC `;
-    const result = await pool.query(get_query, ['SELL', wallet]);
-    const nft = result.rows;
-    return nft;
-  } catch (err) {
-    throw err;
-  }
-}
-
-// all sold nfts by user 
-export const getAllNTFsBoughtByUserId = async (id,wallet) => {
-   try {
-     const get_query = ` 
-                     SELECT *
-                     FROM transactions
-                     WHERE type = $1
-                     AND to_ = $3
-                     ORDER BY created_at  DESC `;
-    const result = await pool.query(get_query, ['BUY', wallet]);
-    const nft = result.rows;
-    return nft;
-  } catch (err) {
-    throw err;
-  }
-}
-
-
-
+};

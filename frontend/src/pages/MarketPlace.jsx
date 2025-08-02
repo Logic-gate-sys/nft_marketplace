@@ -87,6 +87,8 @@ const nftItems = [
 
 
 
+
+
 const MarketPlace = () =>{
     return (
         <div id="text-white" className="flex flex-col gap-0">

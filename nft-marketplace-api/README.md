@@ -37,3 +37,4 @@
 1. User registrations and login validations
    i.  user register with email, wallet address and name
    ii. user logs in with wallet address (only) 
+   iii wallect connection

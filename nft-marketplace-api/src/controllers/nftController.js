@@ -1,8 +1,5 @@
-import { createNft, getAllNfts, getNFTById, deleteNFTById,getAllNTFsMintedByUserId,getAllNTFsBoughtByUserId,getAllNTFsSoldByUserId } from '../models/nftModels.js';
+import { createNft, getAllNfts, getNFTById, deleteNFTById,getAllNFTsByUserStatus} from '../models/nftModels.js';
 import { transferNFTOwnership } from '../services/transactionServices.js';
-
-
-
 
 
 
@@ -10,18 +7,16 @@ import { transferNFTOwnership } from '../services/transactionServices.js';
 // Upload & creating a new nft
 export const create_nft = async(req, res, next) => {
     try {
-        const { title, token_id, owner_id,type } = req.body;
-        const buffer = req.file.buffer; // get the file blob
-        const { originalname, mimetype } = req.file;
-        await createNft(buffer, originalname, mimetype, title, token_id, owner_id,type);
+        const { title, owner_id } = req.body;
+        const {buffer, originalname, mimetype } = req.file;
+        await createNft(buffer, originalname, mimetype, title, owner_id);
         res.status(201).json({ message:'NFT created successfully!'})
     } catch (error) {
         next(error);
    }
 }
 
-
-// List all nfts ever created
+// List all nfts ever created 
 export const get_all_ntfs = async (req, res, next)=>{
     try {
         const all_nfts = await getAllNfts();
@@ -36,7 +31,7 @@ export const get_all_ntfs = async (req, res, next)=>{
 // get a single nft using nfts id
 export const get_nft_byId = async (req, res, next) => {
     try {
-        const id = req.params.id;
+        const {id} = req.params;
         const result = await getNFTById(id);
         res.json(result);
     } catch (error) {
@@ -74,33 +69,10 @@ export const transfer_nft_ownership = async (req, res, next) => {
 
 //--------------------- USERS COLLECTIONS AND NFTS ----------------------
 
-export const get_users_nfts_minted = async (req, res, next) => {
+export const getUserNFTsByStatus = async (req, res, next) => {
     try {
-        const { wallet } = req.params;
-        const result = await getAllNTFsMintedByUserId( wallet);
-        if (result.length === 0) res.status(404).json({ message: 'User has no minted NFTs' });
-        res.status(201).json(result);
-    } catch (err) {
-        next(err);
-    }
-}
-
-
-export const get_users_nfts_sold = async (req, res, next) => {
-    try {
-        const { wallet } = req.params;
-        const result = await getAllNTFsSoldByUserId( wallet);
-        if (result.length === 0) res.status(404).json({ message: 'User has no sold NFTs' });
-        res.status(201).json(result);
-    } catch (err) {
-        next(err);
-    }
-}
-
-export const get_users_nfts_bought = async (req, res, next) => {
-    try {
-        const { wallet } = req.params;
-        const result = await getAllNTFsMintedByUserId( wallet);
+        const { wallet,status } = req.query;
+        const result = await getAllNFTsByUserStatus( wallet,status);
         if (result.length === 0) res.status(404).json({ message: 'User bought NFTs' });
         res.status(201).json(result);
     } catch (err) {

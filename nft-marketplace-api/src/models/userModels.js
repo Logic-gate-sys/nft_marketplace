@@ -1,4 +1,4 @@
-    import config  from '../config/db.js';
+import config  from '../config/db.js';
 const { pool } = config;
     /* 
     FUNCTIONS OF THE USER MODEL:
