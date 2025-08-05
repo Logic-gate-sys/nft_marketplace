@@ -1,20 +1,36 @@
+import { response } from 'express';
 import { createNft, getAllNfts, getNFTById, deleteNFTById,getAllNFTsByUserStatus} from '../models/nftModels.js';
 import { transferNFTOwnership } from '../services/transactionServices.js';
-
-
+import { upload_file,upload_metadata} from '../util/ipfs_utils.js';
 
 
 // Upload & creating a new nft
 export const create_nft = async(req, res, next) => {
     try {
-        const { title, owner_id } = req.body;
-        const {buffer, originalname, mimetype } = req.file;
-        await createNft(buffer, originalname, mimetype, title, owner_id);
-        res.status(201).json({ message:'NFT created successfully!'})
+         const { owner_id } = req.params;
+        //upload image and get img_uri
+        const { buffer, originalname, mimetype } = req.file;
+        if (!buffer || !originalname || !mimetype) return res.status(400).json({ error: 'image file missing' });
+
+        const img_uri = await upload_file(buffer, originalname, mimetype);
+        if (!img_uri) return res.status(400).json({ error: 'could not upload file' });
+
+        // upload metadata to ipfs
+        const { name, desc, background_col, body, eye, tokenId } = req.body;
+        if (!name || !desc || !background_col || !body || !eye || !tokenId) return  res.status(404).json({ error: "Invalid field" });
+        const token_uri = await upload_metadata(name, desc, img_uri, background_col, body, eye, tokenId);
+        if (!token_uri) return  res.status(400).json({ error: 'could not upload metadata to ipfs' });
+
+        // persist token_uri & owner_address
+        const result = await createNft(token_uri, owner_id);
+        console.log("MINT UPLOAD RESULT: ",result)
+        if (!result) return  res.status(400).json({ error: 'could not upload mint details to database' });
+        return res.status(201).json(result);
     } catch (error) {
         next(error);
    }
 }
+
 
 // List all nfts ever created 
 export const get_all_ntfs = async (req, res, next)=>{

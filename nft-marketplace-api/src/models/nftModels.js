@@ -1,5 +1,5 @@
 import config from '../config/db.js';
-const { pinata, pool } = config;
+const { pool } = config;
 
 /* 
 FUNCTIONS THAT THE NFT MODELS MUST PERFORM
@@ -11,26 +11,18 @@ FUNCTIONS THAT THE NFT MODELS MUST PERFORM
   6. Get details of an nft
 
 */
-export const createNft = async (blobBody, original_name, file_mime, title, /*token_id,*/ owner_id,/*collection_id*/) => { // what type of collection is it
-  const nft_query = `INSERT INTO nfts (title, ipfs_url, token_id, owner_id,col_id)
-                  VALUES($1,$2,$3,$4,$5)
+export const createNft = async (token_uri, owner_id) => { // what type of collection is it
+  const nft_query = `INSERT INTO nfts (ipfs_url, owner_id)
+                  VALUES($1, $2)
                  RETURNING * `
   try {
-    const file = new File([blobBody], original_name, { type: file_mime });
-    const upload = await pinata.upload.public.file(file); //upload to pinata
-    const hashed_url = upload['cid'];
-    //<----- token id should come fron pinata after minting
-    console.log(upload);
-      try {
-        const result = await pool.query(nft_query, [title, hashed_url, /*token_id,*/ owner_id,/*collection_id*/]);
-        return result.rows[0];
-      } catch (error) {
-        console.error(error);
-      }
+    const result = await pool.query(nft_query, [token_uri, owner_id]);
+    return result.rows[0];
   } catch (error) {
     console.log(error);
   }
 }
+
 
 export const getAllNfts = async () => {
   try {

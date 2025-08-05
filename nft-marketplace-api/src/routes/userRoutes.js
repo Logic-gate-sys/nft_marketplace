@@ -1,6 +1,6 @@
 import express from "express";
 const { Router } = express;
-import { getAllUser, getUserById, updateUserInfo, wallet_login,getNonce } from '../controllers/userController.js';
+import { getAllUser,getUserByAddr, getUserById, updateUserInfo, wallet_login, getNonce } from '../controllers/userController.js';
 
 
 
@@ -11,9 +11,7 @@ userRouter.patch('/:id', updateUserInfo);
 userRouter.get('/', getAllUser);
 userRouter.get('/nonce', getNonce); // nonce for wallet message
 userRouter.get('/:id', getUserById);
-
-
-
+userRouter.get('wallets/:address', getUserByAddr);
 
 
 export default userRouter;

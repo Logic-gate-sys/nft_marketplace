@@ -4,7 +4,7 @@ This contract is design to serve among other things these cores purposes:
 2. Sell/ transfer of token ownership
 3. Metadata storage and retrieval for the front-end 
 4. removing an nft only-owner can remove
-5. Onchain modification of nfts: owner, price
+5.* Onchain modification of nfts: owner, price
 
 2. There two contractions : 
   - Collection contract : this is the main logic for minting , selling and storing a collection 
