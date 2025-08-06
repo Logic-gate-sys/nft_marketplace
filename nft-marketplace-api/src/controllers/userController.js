@@ -72,8 +72,8 @@ export const getAllUser = async (req,res,next) => {
 // get details of a specific user - using the wallet 
 export const getUserByAddr = async (req, res, next) => {
     try {
-        const {walletAddr} = req.params;
-        const user = await getUserByAddrModel(walletAddr);
+        const {address} = req.params;
+        const user = await getUserByAddrModel(address);
         if (!user) {
             return res.status(404).json({ message: 'Invalid wallet address' });
         }

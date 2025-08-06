@@ -7,18 +7,19 @@ import { upload_file,upload_metadata} from '../util/ipfs_utils.js';
 // Upload & creating a new nft
 export const create_nft = async(req, res, next) => {
     try {
-         const { owner_id } = req.params;
+        const { owner_id } = req.params;
         //upload image and get img_uri
-        const { buffer, originalname, mimetype } = req.file;
-        if (!buffer || !originalname || !mimetype) return res.status(400).json({ error: 'image file missing' });
+
+        if (!req.file) res.status(400).json({error: "No file provided"})
+        const { buffer, originalname, mimetype } =req.file;
 
         const img_uri = await upload_file(buffer, originalname, mimetype);
         if (!img_uri) return res.status(400).json({ error: 'could not upload file' });
 
-        // upload metadata to ipfs
-        const { name, desc, background_col, body, eye, tokenId } = req.body;
-        if (!name || !desc || !background_col || !body || !eye || !tokenId) return  res.status(404).json({ error: "Invalid field" });
-        const token_uri = await upload_metadata(name, desc, img_uri, background_col, body, eye, tokenId);
+        // upload metadata to ipfs: NOTE: Token Id is handled by the smart contract
+        const { name, desc, background_col, body, eye} = req.body;
+        if (!name || !desc || !background_col || !body || !eye) return  res.status(404).json({ error: "Invalid field" });
+        const token_uri = await upload_metadata(name, desc, img_uri, background_col, body, eye);
         if (!token_uri) return  res.status(400).json({ error: 'could not upload metadata to ipfs' });
 
         // persist token_uri & owner_address

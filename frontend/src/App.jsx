@@ -15,7 +15,8 @@ import { connectWallet } from './components/helperComponents.jsx';
 const  App = ()=> {
   // hold address 
   const [address, setAddress] = useState("");
-    // whole wallet connect mechanism
+  // whole wallet connect mechanism
+  
   const handleWallectConnect =async () => {
     const newAddress = await connectWallet();
     if(newAddress)setAddress(newAddress);

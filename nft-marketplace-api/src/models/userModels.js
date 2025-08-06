@@ -42,7 +42,8 @@ const { pool } = config;
         try {
         const getUserByAddrQuery = `SELECT * 
                                     FROM users
-                                    WHERE wallet_address = $1`;
+                                    WHERE wallet_address = $1
+                                    `;
         const result = await pool.query(getUserByAddrQuery, [walletAddr]);
         return result.rows[0];
         } catch (error) {

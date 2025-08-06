@@ -4,14 +4,13 @@ import { getAllUser,getUserByAddr, getUserById, updateUserInfo, wallet_login, ge
 
 
 
-const userRouter = Router();
+const userRouter = Router();  
 
 userRouter.post('/wallet_connect', wallet_login);
 userRouter.patch('/:id', updateUserInfo);
 userRouter.get('/', getAllUser);
 userRouter.get('/nonce', getNonce); // nonce for wallet message
 userRouter.get('/:id', getUserById);
-userRouter.get('wallets/:address', getUserByAddr);
-
+userRouter.get('/wallet/:address', getUserByAddr);
 
 export default userRouter;

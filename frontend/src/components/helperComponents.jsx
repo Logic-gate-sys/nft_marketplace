@@ -76,3 +76,15 @@ export const connectWallet = async () => {
     alert('Something went wrong, wallet not connected');
   }
 };
+
+
+
+export const CollectionCard = () => {
+  return (
+    <>
+      <div>
+        Collection
+      </div>
+    </>
+  )
+}
