@@ -1,5 +1,5 @@
 import { response } from 'express';
-import { createNft, getAllNfts, getNFTById, deleteNFTById,getAllNFTsByUserStatus} from '../models/nftModels.js';
+import { createNft, getAllNfts, getNFTById, deleteNFTById,getAllNFTsByUserStatus, getNFTByUserIdModel} from '../models/nftModels.js';
 import { transferNFTOwnership } from '../services/transactionServices.js';
 import { upload_file,upload_metadata} from '../util/ipfs_utils.js';
 
@@ -98,3 +98,18 @@ export const getUserNFTsByStatus = async (req, res, next) => {
 }
 
 
+//------------- nfts by user ---------------------
+export const getAllNFTsByUserId = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await getNFTByUserIdModel(id);
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "No NFTs found for this user." });
+    }
+
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -1,4 +1,4 @@
- import React, { useState } from 'react';
+ import React, { useEffect, useState } from 'react';
  import axios from 'axios';
  import { ethers } from 'ethers';
  
@@ -79,12 +79,52 @@ export const connectWallet = async () => {
 
 
 
-export const CollectionCard = () => {
+
+// ---------------------- Collection Card - -------------------------------
+let data ={
+  "name": "Cyber Ape #undefined",
+  "description": "NFT TWO ",
+  "image": "bafybeif4fhjadvl5muzuuy4lv2htachuomkv7twfqfrlk2tczdlckj2c6e",
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Matrix"
+    },
+    {
+      "trait_type": "Body",
+      "value": "Human"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "Laser"
+    }]
+};
+  
+export const CollectionCard = ({data}) => {
+  const {image, name,token_id,status } = data;
   return (
     <>
-      <div>
-        Collection
+    <div
+    id="collection-card"
+    className ="w-[%100] flex items-center gap-4 bg-gray-700 shadow-2xl opacity-80 p-4 rounded-xl hover:shadow-2xl transition-shadow duration-300"
+  >
+    {/* Image */}
+    <img
+      src={image}
+      alt="Collection Cover"
+      className="w-16 h-8 rounded-md object-cover"
+    />
+
+    {/* Collection Name */}
+    <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
+
+    {/* Buttons */}
+    <div className="ml-auto flex gap-4">
+      <button className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 transition">
+        Details
+      </button>
+    </div>
       </div>
-    </>
+  </>
   )
 }

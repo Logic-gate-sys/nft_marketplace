@@ -176,3 +176,16 @@ export const getAllNFTsByUserStatus = async (wallet, status) => {
     throw err;
   }
 };
+
+
+export const getNFTByUserIdModel = async (userId) => {
+  try {
+    const query = "SELECT * FROM nfts WHERE owner_id= $1";
+    const values = [userId];
+
+    const result = await pool.query(query, values);
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};

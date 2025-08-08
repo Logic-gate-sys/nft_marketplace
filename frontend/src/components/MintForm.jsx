@@ -1,5 +1,6 @@
-export const MintForm = ({formData,setWantToMint,handleChange,handleSubmit,formErrors}) => {
-    
+ 
+
+export const MintForm = ({ formData, setWantToMint, handleChange, handleSubmit, formErrors }) => {
     return (
         <form
             onSubmit={handleSubmit}
@@ -124,7 +125,7 @@ export const MintForm = ({formData,setWantToMint,handleChange,handleSubmit,formE
                 <button
                                 type="button"
                                 id ="cancel"
-                  onClick={() => setWantToMint(false)}
+                  onClick={()=> setWantToMint(false)}
                   className="bg-red-400 px-5 py-2 rounded-2xl font-semibold text-lg hover:bg-purple-500"
                 >
                   Cancel
