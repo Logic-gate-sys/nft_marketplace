@@ -15,8 +15,8 @@ const Nav = () => {
         setIsMobile(isMobile => !isMobile);
     }
     return (
-        <nav id='nav-container' className={!isMobile ? 'sticky' : 'h-full sticky'}>
-            <div id="mobile-view-nav" className='flex items-center md:hidden'>
+        <nav id='nav-container' className={!isMobile ? 'sticky' : 'h-full sticky'}  >
+            <div id="mobile-view-nav" className='flex items-center md:hidden z-99'>
                 <div id="menu-and-logo" className='flex items-center gap-1 mr-auto md:hidden'>
                     <MenuOutlined className='p-3 text-3xl active:scale-95' onClick={openNav} />
                     <img src={Logo} rel='logo' height={30} width={30} />

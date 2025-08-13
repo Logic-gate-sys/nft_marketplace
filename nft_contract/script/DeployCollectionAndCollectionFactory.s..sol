@@ -1,12 +1,3 @@
-/* 
-✅ Deployment Order
-Deploy Collection contract as logic
-
-Deploy CollectionFactory with the logic address as constructor arg
-
-Call createCollection(name, symbol) to deploy clones
-*/
-
 //SPDX-License-Identifier:MIT
 pragma solidity ^0.8.20;
 

@@ -1,20 +1,21 @@
 import { useState ,useEffect} from "react";
 import axios from 'axios';
-import { Spinner, Popup, connectWallet ,CollectionCard} from '../components/helperComponents.jsx';
+import { Spinner, Popup ,CollectionCard,Loader} from '../components/helperComponents.jsx';
 import FormData, { promises } from 'form-data';
 import { MintForm } from "../components/MintForm.jsx";
-import { useAsyncError } from "react-router-dom";
+import { connectWallet } from "../ether/contract_interaction_sepolia.js";
 
 
 const UploadPage = ({id}) => {
   const [isloading, setLoading] = useState(false);
   const [wantToMint, setWantToMint] = useState(false);
   const [formErrors, setFormErrors] = useState({});
-  const [selectedNFT, setSelectedNFT] = useState(null);
+  const [mintSuccess, setMintSuccess] = useState(false);
 
   //-------- collections fetching  ---------------------
   const [collections, setCollections] = useState([]);
   const [fetchingCols, setFetchingCols] = useState(false);
+  const [selectedNFT, setSelectedNFT] = useState(null);
 
   //------- form data should look this way --------------
   const [formData, setFormData] = useState({
@@ -58,11 +59,12 @@ const UploadPage = ({id}) => {
 
           const withMetadata = await Promise.all(
           nft_raw.map(async (nft) => {
-          const metadata = await fetchPinataMetaData(nft.ipfs_url);
+            const metadata = await fetchPinataMetaData(nft.ipfs_url);
           return { ...nft, metadata };
           })
     );
            setCollections(withMetadata);
+           setSelectedNFT(withMetadata[1]);
            //stop fetching loader 
            console.log("WITH METADATA: ", withMetadata);
            console.log("Collections ", collections);
@@ -72,10 +74,10 @@ const UploadPage = ({id}) => {
          }
        }
      };
-     getCollection()
-   }, [id]);
+    getCollection();
+   }, [id,mintSuccess]);
   
-  // ----------------- handle changes ----------------------------------
+  // ----------------- handle changes in form ----------------------------------
   const handleChange = (e) => {
       const { name, value, type, files } = e.target;
       
@@ -86,7 +88,7 @@ const UploadPage = ({id}) => {
     }
   };
    
-    
+//------------- submit nft for minting -----------------------
     const handleSubmit = async (e) => {
       e.preventDefault();
       try {
@@ -104,8 +106,9 @@ const UploadPage = ({id}) => {
           }
           const res = await axios.post(`http://localhost:3000/api/nfts/${id}`, payload);
           console.log("RESULT OF MINTING ", res.data);
-          alert("NFT CREATED SUCESSFULLY",res.data)
-          
+        alert("NFT CREATED SUCESSFULLY", res.data);
+        setMintSuccess(true); //<-------------- mint success
+        return;
       } catch (error) {
           console.log(error);
       }
@@ -117,8 +120,10 @@ const UploadPage = ({id}) => {
     };
   
   
+  
     
-   // --------------- validate form ---------------------------------------------
+  // --------------- validate form ---------------------------------------------
+  
     const validateForm = () => {
         let errors = {}
         if (!formData.name.trim()) errors.name = "Name field cannot be empty";
@@ -144,56 +149,61 @@ const UploadPage = ({id}) => {
             </div>
           <div id="user-collection" className=" flex flex-col ">
           <h1 className=" text-3xl font-bold mb-4 "> My Collection </h1>
-            <div id="col-sub" className="ml-15 mr-15 mt-4 md:flex  flex gap-6 flex-wrap ">
-          <div  id='user-collections' className="w-fit h-130 p-10  overflow-y-auto overflow-x-hidden bg-gray-600 opacity-70 shadow-xl flex flex-col gap-3">
-              {fetchingCols ? " Loading...." : collections.map((nft) => (
-                <div onClick={() => setSelectedNFT(nft)} key={nft.id}>
-         <CollectionCard
-           key={nft.id}
-           d data={{
-            image:`https://gateway.pinata.cloud/ipfs/${nft.metadata.image}`,
-             name: nft.metadata.name ,
-            token_id: nft.id,
-            status: nft.listed ? "Listed" : "Unlisted",
-          }}
-  />
-             </div>
-)) }
-      </div>
-            {selectedNFT
-              && <div
-              id="item-details"
-              className="h-[130px] w-1/ flex flex-col bg-gray-800 p-4 rounded-lg gap-4"
-            >
-              {/* Image */}
-              <div id="image" className=" border border-amber-50 rounded-lg overflow-hidden">
-                <img
-                  src={`https://gateway.pinata.cloud/ipfs/${selectedNFT.metadata.image}`}
-                  alt={selectedNFT.metadata.name}
-                  className=" object-cover"
-                />
+          {fetchingCols ? "Loading...." :
+            <div id="col-sub" className="ml-10 mr-10 mt-4 md:flex  flex gap-6 flex-wrap ">
+              <div id='user-collections' className="w-fit h-130 p-8  overflow-y-auto overflow-x-hidden bg-gray-600 opacity-70 shadow-xl flex flex-col gap-3">
+                {collections.map((nft) => (
+                  <div onClick={() => {
+                    console.log("SELECTED NFT: ", nft);
+                    setSelectedNFT(nft);
+                  }} key={nft.id}>
+                    <CollectionCard
+                      key={nft.id}
+                      d data={{
+                        image: `https://gateway.pinata.cloud/ipfs/${nft.metadata.image}`,
+                        name: nft.metadata.name,
+                        token_id: nft.id,
+                        status: nft.listed ? "Listed" : "Unlisted",
+                      }}
+                    />
+                  </div>
+                ))}
               </div>
+              {selectedNFT
+                && <div
+                  id="item-details"
+                  className="h-[130px] w-1/2 flex flex-col bg-gray-800 p-4 rounded-lg gap-4"
+                >
+                  {/* Image */}
+                  <div id="image" className=" border border-amber-50 rounded-lg overflow-hidden">
+                    <img
+                      src={`https://gateway.pinata.cloud/ipfs/${selectedNFT.metadata.image}`}
+                      alt={selectedNFT.metadata.name}
+                      className=" object-cover"
+                    />
+                  </div>
 
-              {/* Description */}
-              <div id="description" className="text-white">
-                <h1 className="text-lg font-bold">{selectedNFT.metadata.name} #{selectedNFT.id}</h1>
-                <p className="text-sm text-gray-400">{selectedNFT.metadata.description}</p>
-              </div>
+                  {/* Description */}
+                  <div id="description" className="text-white">
+                    <h1 className="text-lg font-bold">{selectedNFT.metadata.name} #{selectedNFT.id}</h1>
+                    <p className="text-sm text-gray-400">{selectedNFT.metadata.description}</p>
+                  </div>
 
-              {/* Buttons */}
-              <div id="detail-btn" className="flex gap-2">
-                <button className="bg-[#A259FF] text-white px-3 py-1 rounded-lg hover:bg-purple-700">
-                  List
-                </button>
-                <button className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600">
-                  Unlist
-                </button>
-                <button className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">
-                  Remove
-                </button>
-              </div>
-            </div>}
-      </div>      
+                  {/* Buttons */}
+                  <div id="detail-btn" className="flex gap-2">
+                    <button className="bg-[#A259FF] text-white px-3 py-1 rounded-lg hover:bg-purple-700">
+                      List
+                    </button>
+                    <button className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600">
+                      Unlist
+                    </button>
+                    <button className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">
+                      Remove
+                    </button>
+                  </div>
+                </div>}
+            </div>
+          }   
           </div>
             {isloading && <Spinner />}
         </div>

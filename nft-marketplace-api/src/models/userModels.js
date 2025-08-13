@@ -96,8 +96,7 @@ export const updateUserInfo = async (id,name,email) =>{ // dynamic update
     } catch (error) {
         throw error
         }
-}
-    
+}  
 // Nonce connected with wallet connect 
  //get user by their wallet_address:
     export const storeNonce = async (walletAddr, message) => {

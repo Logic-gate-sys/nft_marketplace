@@ -1,8 +1,10 @@
 
 import { Pool } from 'pg';  // pool for concurrent transactions
-import { config } from 'dotenv';
+import dotenv from 'dotenv';
 import { PinataSDK } from 'pinata';
-config();
+// import path from 'path';
+// dotenv.config({path:path.resolve('../../../.env')});
+dotenv.config();
 
 // Pinata configuration
 const pinata = new PinataSDK({
@@ -11,12 +13,12 @@ const pinata = new PinataSDK({
 });
 
 const pool = new Pool({
-  user: process.env.USER,
-  database:process.env.DATABASE,
-  port:process.env.DB_PORT,
-  password: process.env.PASSWORD,
-  host:process.env.HOST
-})
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  database: process.env.DB_NAME
+});
 
 
 pool.on('connect', () => {
