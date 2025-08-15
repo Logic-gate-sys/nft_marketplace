@@ -1,17 +1,6 @@
-import { ethers } from 'ethers';
 import axios from 'axios';
-import abi from './abi.json' assert{type: 'json'};
-import.meta.env.VITE_COLLECTION_FACTORY_ADDRESS;
+import { ethers } from 'ethers';
 
-/*
-ORDER OF INTERACTIONS:
-1. login with wallet address via metamusk should only allow users to view their collections
-2. Explicit mint-button click should trigger metamusk signing and subsequent gas +/ fee payment authorisation
-2. Explicit list should prompt metamust for signing and appropriate gas payment to list
-4. Explicit buy operation should trigger metamust signer for payment authorisation
-5. Explicity unlisting of nft should also trigger metamusk for approval and gas payment
-6. Log appropriate events / errors involved in signed transactions
-*/
 
 
 export const connectWallet = async () => {
@@ -31,32 +20,6 @@ export const connectWallet = async () => {
     console.log('Wallet connection failed', error);
   }
     // setAddress(userWalletAddress); // Only if setAddress is defined
-}
-
-// for transactions involving a signer
-export const write_to_contract = async (signer) => {
-  try {
-    //contract instance 
-    const contract = new ethers.Contract(import.meta.env.COLLECTION_FACTORY_ADDRESS, abi, signer); // get contract object 
-
-    return contract;
-  } catch (error) {
-    console.log("Could not get contract instance", error);
-    return;
-  }
-}
-
-// reading blockchain state 
-export const read_from_contract = async (provider) => {
-  try {
-    //contract instance 
-    const contract = new ethers.Contract(import.meta.env.COLLECTION_FACTORY_ADDRESS, abi, provider); // get contract object 
-
-    return contract;
-  } catch (error) {
-    console.log("Could not get contract instance", error);
-    return;
-  }
 }
 
 
@@ -89,3 +52,25 @@ export const login = async (signer,wallet) => {
     alert('Something went wrong, wallet not connected');
   }
 }
+
+// get user id 
+export const fetchUserId = async (wallet_addr) => {
+    try {
+      if (!wallet_addr) console.error("No wallet found");
+      const { data } = await axios.get(
+        `http://localhost:3000/api/users/wallet/${wallet_addr}`
+      );
+      // if user is not found
+      if (!data) {
+        console.log("No user id found for wallet", wallet_addr);
+        return;
+      }
+      const { id } = data;
+      console.log("USER ID FOUND : ", id);
+      // set user id
+      return id ;
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+  };

@@ -19,11 +19,9 @@ export const upload_file = async (blobBody, original_name,file_mime) => {
 
 
 // metadata upload 
-export const upload_metadata = async (name, desc, img_uri, background_col, body, eye, tokenId ) => {
+export const upload_metadata = async ( img_uri, background_col, body, eye ) => {
     // metadata
   const metadata = {
-    name: `${name} #${tokenId}`,
-    description: desc,
     image: img_uri,
     attributes: [
       { trait_type: "Background", value: background_col },
@@ -38,7 +36,7 @@ export const upload_metadata = async (name, desc, img_uri, background_col, body,
           [JSON.stringify(metadata)],
           { type: 'application/json' }
       );
-      const file = new File([metadataBlob], `${name}_${tokenId}.json`, {
+      const file = new File([metadataBlob], `.json`, {
           type: 'application/json'
       });
 

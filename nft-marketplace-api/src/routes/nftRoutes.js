@@ -16,7 +16,8 @@ const upload = multer({ storage });
 
 
 const nftRouter = Router;
-nftRouter.post('/:owner_id', upload.single('file'), create_nft); // create
+nftRouter.post('/', upload.single('file'), create_nft); // create
+
 nftRouter.get('/', get_all_ntfs); // all NFTs
 nftRouter.get('/user_nfts', getUserNFTsByStatus);     // before wildcard
 nftRouter.get('/users/:id', getAllNFTsByUserId);

@@ -2,12 +2,10 @@ import { Routes, Route } from "react-router-dom";
 import axios from "axios";
 import { MarketPlace, Home, NFTDetails, UploadPage, Profile } from "./pages";
 import Nav from "./components/Nav";
-import SignUp from "./components/SignUp";
-import WalletsConnect from "./components/WalletConnect";
 import { Avatar } from "antd";
 import avatar from "./assets/avatar.svg";
 import { useState } from "react";
-import { connectWallet, login } from "./ether/contract_interaction_sepolia";
+import { connectWallet,login,fetchUserId } from "./ether/wallet_interactions";
 
 const App = () => {
   // hold address
@@ -23,7 +21,8 @@ const App = () => {
       await login(signer, wallet);
       //on sucessful login
       setAddress(wallet);
-      await fetchUserAddress(wallet);
+      const id = await fetchUserId(wallet);
+      setUserid(id);
       return;
     } catch (error) {
       console.log(error);
@@ -31,31 +30,12 @@ const App = () => {
     }
   };
 
-  const fetchUserAddress = async (wallet_addr) => {
-    try {
-      if (!wallet_addr) console.error("No wallet found");
-      const { data } = await axios.get(
-        `http://localhost:3000/api/users/wallet/${wallet_addr}`
-      );
-      // if user is not found
-      if (!data) {
-        console.log("No user id found for wallet", wallet_addr);
-        return;
-      }
-      const { id } = data;
-      console.log("USER ID FOUND : ", id);
-      // set user id
-      setUserid(id);
-    } catch (error) {
-      console.log(error);
-      return;
-    }
-  };
+
 
   return (
     <div
       id="app-page"
-      className=" h-screen text-sm font-ubuntu text-white grid grid-cols-1 md:grid-cols-[0.2fr_5fr] bg-black"
+      className=" h-screen text-md font-sans text-white grid grid-cols-1 md:grid-cols-[0.2fr_5fr] bg-gray-800"
     >
       <div id="sibe-bar">
         <Nav />
@@ -85,8 +65,6 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/nft-market" element={<MarketPlace />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/wallet" element={<WalletsConnect />} />
             <Route path="/upload" element={<UploadPage id={user_id} />} />
             <Route path="/nft-details/:id" element={<NFTDetails />} />
             <Route path="/profile" element={<Profile />} />

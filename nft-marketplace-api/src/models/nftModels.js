@@ -11,12 +11,12 @@ FUNCTIONS THAT THE NFT MODELS MUST PERFORM
   6. Get details of an nft
 
 */
-export const createNft = async (token_uri, owner_id) => { // what type of collection is it
-  const nft_query = `INSERT INTO nfts (ipfs_url, owner_id)
-                  VALUES($1, $2)
+export const createNft = async (col_id, ipfs_uri, owner_id) => { // what type of collection is it
+  const nft_query = `INSERT INTO nfts (col_id, ipfs_uri, owner_id)
+                  VALUES($1, $2, $3)
                  RETURNING * `
   try {
-    const result = await pool.query(nft_query, [token_uri, owner_id]);
+    const result = await pool.query(nft_query, [col_id, ipfs_uri, owner_id]);
     return result.rows[0];
   } catch (error) {
     console.log(error);

@@ -60,6 +60,8 @@ contract Collection is Initializable, ERC721Upgradeable, OwnableUpgradeable, Ree
     mapping(uint256 tokenId => uint128 ethPrice) s_tokenIdToPriceInEth; // listed tokens
     uint256 private i_maxTokens;
     address private s_owner;
+    // contract uri for the contract level metadata
+    string  private immutable i_contract_uri;
 
     //events
     event Collection_NFTMintedSuccess(address _to, address _from, uint256 _tokenId);
@@ -93,10 +95,12 @@ contract Collection is Initializable, ERC721Upgradeable, OwnableUpgradeable, Ree
     * @param symbol: symbol  of NFT minted
     * @notice: This function will be used in the collection factory to deploy a unique clone of an NFT 
     */
-    function initialize(address _owner, string memory name, string memory symbol, uint256 _total_supply)
+    function initialize(address _owner, string memory name, string memory symbol, uint256 _total_supply,string memory _contract_uri)
         public
         initializer
     {
+        //set contract level uri
+        i_contract_uri = _contract_uri;
         i_maxTokens = _total_supply; // maximum amount of the collection that can be minted
         s_owner = _owner;
         s_tokenCounter = 0; // intial minted tokens
@@ -119,7 +123,7 @@ contract Collection is Initializable, ERC721Upgradeable, OwnableUpgradeable, Ree
     *@param _tokenURI: the URI from ipfs after uploading file to be minted
     *@notice : This function takes a file URI and mints a unique NFT  for owner: but it first check to see if minted max-cap is exceeded
     */
-    function mint(string memory _tokenURI) public onlyOwner NotExceedTotalSupply(i_maxTokens, s_tokenCounter) {
+    function mint(string memory _tokenURI) public onlyOwner nonReentrant NotExceedTotalSupply(i_maxTokens, s_tokenCounter) {
         // token URI is a combination image uri and metadata
         s_tokenIdToTokenURI[s_tokenCounter] = _tokenURI; // create new token
         _safeMint(msg.sender, s_tokenCounter); // mint token id to minter
@@ -193,6 +197,13 @@ contract Collection is Initializable, ERC721Upgradeable, OwnableUpgradeable, Ree
         return s_tokenIdToTokenURI[tokenId]; // return the stores uri
     }
 
+   /***
+    * @notice: Contract level uri points to a contracts metadata on ipfs
+    */
+     function contractURI() public view returns(string memory){
+        return i_contract_uri;
+     }
+     
     //base uri
     function _baseURI() internal pure override returns (string memory) {
         return "data:application/json;base64,";

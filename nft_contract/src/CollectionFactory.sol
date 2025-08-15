@@ -53,9 +53,8 @@ import {Collection} from "./Collection.sol";
 
 contract CollectionFactory {
     address public implementation;
-    address[] public allCollections;
-
-    event CollectionCreated(address indexed creator, address collection);
+mapping(address user =>address[] collections) public user_collections;
+    event CollectionCreated(address indexed creator, address indexed collection);
 
     constructor(address _implementation) {
         implementation = _implementation; // address of the deploy collection contract
@@ -67,15 +66,15 @@ contract CollectionFactory {
     * @param amountDscToMint: The amount of DecentralizedStableCoin to mint
     * @notice: This function will deposit your collateral and mint DSC in one transaction
     */
-    function createCollection(string memory name, string memory symbol,uint256 total_supply) external returns (address) {
+    function createCollection(string memory name, string memory symbol,uint256 total_supply,string memory contract_uri) external returns (address) {
         address clone = Clones.clone(implementation);
-        Collection(clone).initialize(msg.sender, name, symbol,total_supply);
-        allCollections.push(clone); // store all collection created in array
+        Collection(clone).initialize(msg.sender, name, symbol,total_supply,contract_uri);
+        user_collections[msg.sender].push(clone);
         emit CollectionCreated(msg.sender, clone);
         return clone;
     }
 
     function getCollections() external view returns (address[] memory) {
-        return allCollections;
+        return user_collections[msg.sender];
     }
 }
