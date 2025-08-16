@@ -24,7 +24,7 @@ export const connectWallet = async () => {
 
 
 //user login
-export const login = async (signer,wallet) => {
+export const login = async (signer, wallet) => {
   try {
     // nonce message
   const { data } = await axios.get(`http://localhost:3000/api/users/nonce?address=${wallet}`);

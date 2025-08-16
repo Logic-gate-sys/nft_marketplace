@@ -18,7 +18,7 @@ import collection_abi from '../../../nft_contract/out/Collection.sol/Collection.
 
 
 // for transactions involving a signer
-export const createCollection = async (signer, name, symbol, total_supply) => {
+export const createCollection = async (signer, name, symbol, total_supply,contract_uri) => {
   if (!COLLECTION_FACTORY_ADDRESS) {
     console.log("No contract address provided from env");
     return;
@@ -31,7 +31,7 @@ export const createCollection = async (signer, name, symbol, total_supply) => {
     //contract instance 
     const collection_factory_contract = new ethers.Contract(COLLECTION_FACTORY_ADDRESS, factory_abi.abi, signer); 
     //a transaction occurs
-    const trx = await collection_factory_contract.createCollection(name, symbol, total_supply);
+    const trx = await collection_factory_contract.createCollection(name, symbol, total_supply,contract_uri);
     // get transactiaon receipt after transaction is mined
     const receipt = await trx.wait()// wait for transaction to be mined
     if (receipt) {
@@ -75,7 +75,11 @@ export const read_from_contract = async (provider) => {
   }
 }
 
-
+export const getNextNFTID = async (provider, collection_addr) => {
+  const readable_collection_contract = new ethers.Contract(collection_addr, collection_abi.abi, provider);
+  const previous_id = await readable_collection_contract.getNextId();
+  return previous_id.toNumber();
+}
 
 export const mintNFT = async ( signer, collection_addr, ipfs_uri) => {
   try {

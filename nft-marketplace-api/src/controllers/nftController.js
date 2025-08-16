@@ -1,7 +1,7 @@
 import { response } from 'express';
 import { createNft, getAllNfts, getNFTById, deleteNFTById,getAllNFTsByUserStatus, getNFTByUserIdModel} from '../models/nftModels.js';
 import { transferNFTOwnership } from '../services/transactionServices.js';
-import { upload_file,upload_metadata} from '../util/ipfs_utils.js';
+import { upload_file,upload_nft_metadata} from '../util/ipfs_utils.js';
 
 
 // Upload & creating a new nft
@@ -15,13 +15,13 @@ export const create_nft = async(req, res, next) => {
         if (!img_uri) return res.status(400).json({ error: 'could not upload file' });
 
         // upload metadata to ipfs: NOTE: Token Id is handled by the smart contract
-        const { background_col, body, eye,  col_id, owner_id} = req.body;
-        if (!background_col || !body || !eye || !col_id || !owner_id) return  res.status(404).json({ error: "Invalid request data" });
-        const token_uri = await upload_metadata( img_uri,background_col, body, eye);
+        const {name,id,description, background_col, body, eye,  col_id} = req.body;
+        if (!background_col || !body || !eye || !col_id) return  res.status(404).json({ error: "Invalid request data" });
+        const token_uri = await upload_nft_metadata(name,id,description, img_uri,background_col, body, eye);
         if (!token_uri) return  res.status(400).json({ error: 'could not upload metadata to ipfs' });
 
         // persist token_uri & owner_address
-        const result = await createNft(col_id, token_uri, owner_id);
+        const result = await createNft(col_id, token_uri);
         console.log("COL ID : ",col_id)
         if (!result) return res.status(400).json({ error: 'could not upload mint details to database' });
         // the signer needs the ipfs_url to give to the contract for nft minting to be successful

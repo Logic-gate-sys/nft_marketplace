@@ -1,6 +1,5 @@
-import FormData, { promises } from "form-data";
 import { connectWallet, fetchUserId } from "../ether/wallet_interactions.js";
-import { mintNFT, createCollection } from "../ether/contract_interaction.js";
+import { mintNFT, getNextNFTID } from "../ether/contract_interaction.js";
 import axios from "axios";
 import { useState } from "react";
 
@@ -12,12 +11,14 @@ import { useState } from "react";
 
 
 
-export const MintForm = ({setWantsToMint, col_id}) => {
+export const MintForm = ({setWantsToMint, col_id, col_name}) => {
   const [isloading, setLoading] = useState(false);
   const [wantToMint, setWantToMint] = useState(false);
 
+
   //------- form data should look this way --------------
   const [formData, setFormData] = useState({
+    description: "",
     background_col: "Galaxy",
     body: "Robot",
     eye: "Laser",
@@ -48,14 +49,11 @@ export const MintForm = ({setWantsToMint, col_id}) => {
         payload.append(key, formData[key]);
       }
       // get wallet of user and use it to get id
-      const { signer, wallet } = await connectWallet();
+      const { provider,signer, wallet } = await connectWallet();
       console.log("USER WALLET ADDRESS : ", wallet);
       // use wallet to fetch id
       const id  = await fetchUserId(wallet);
       // append rest of data to formdata payload
-      console.log("USER ID FROM FETCH: ", id);
-      payload.append("col_id", col_id);
-      payload.append("owner_id", id);
 
       // 
       const res2 = await axios.get(`http://localhost:3000/api/collections/${col_id}`);
@@ -64,6 +62,13 @@ export const MintForm = ({setWantsToMint, col_id}) => {
       }
       const { contract_addr } = res2.data;
       console.log("CONTRACT ADDRESS: ", contract_addr);
+
+      //get next collection id 
+      const nft_id = await getNextNFTID(provider, contract_addr);
+      console.log("USER ID FROM FETCH: ", id);
+      payload.append("col_id", col_id);
+      payload.append("id", nft_id);
+      payload.append("name", col_name);
 
       // post data to endpoint: this returns the json containing ipfs_uri
       const result1 = await axios.post(
@@ -117,7 +122,13 @@ export const MintForm = ({setWantsToMint, col_id}) => {
             <option value="Matrix">Matrix</option>
             <option value="White">White</option>
           </select>
-        </div>
+          </div>
+          <div className="flex items-center gap-4" >
+            <label htmlFor="description" className="w-32 font-medium"> Description </label>
+            <textarea
+              onChange={handleChange}
+              name="description" id="description" placeholder="Enter a brief NFT description : e.g Not more than 80 words" className="bg-gray-700 font-bold p-4 flex-1" />
+          </div>
 
         <div className="flex items-center gap-4">
           <label htmlFor="body" className="w-32 font-medium">

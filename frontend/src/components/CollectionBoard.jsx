@@ -57,7 +57,7 @@ const CollectionBoard = () => {
         )}
       </div>
       </div>
-      {wantsToMint && <MintForm setWantsToMint={setWantsToMint} col_id={5}  />}
+      {wantsToMint && <MintForm setWantsToMint={setWantsToMint} col_id={5} col_name={'DUMMY DUMMY'}  />}
       </>
   );
 };

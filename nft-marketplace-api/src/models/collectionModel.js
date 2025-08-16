@@ -3,12 +3,12 @@ const { pool } = config;
 
 
 
-export const createCollection = async (name, description, creator_id,contract_addr,total_supply) => {
-    const query = `INSERT INTO collections (name,description,creator_id,contract_addr,total_supply)
-                   VALUES ($1,$2,$3,$4,$5) 
+export const createCollection = async (creator_id,contract_addr,total_supply,col_uri) => {
+    const query = `INSERT INTO collections (creator_id,contract_addr,total_supply,col_uri)
+                   VALUES ($1,$2,$3,$4) 
                    RETURNING *`;
     try {
-        const result = await pool.query(query, [name, description, creator_id, contract_addr,total_supply]);
+        const result = await pool.query(query, [ creator_id, contract_addr,total_supply,col_uri]);
         if (!result) {
             console.log("Could not create collection , you might want to check why");
             return;

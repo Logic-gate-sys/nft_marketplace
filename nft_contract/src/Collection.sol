@@ -58,10 +58,11 @@ contract Collection is Initializable, ERC721Upgradeable, OwnableUpgradeable, Ree
     uint256 private s_tokenCounter;
     mapping(uint256 tokenId => string tokenURI) s_tokenIdToTokenURI;
     mapping(uint256 tokenId => uint128 ethPrice) s_tokenIdToPriceInEth; // listed tokens
+    mapping(string token_uri => uint256 tokenId) s_tokenURIToId;
     uint256 private i_maxTokens;
     address private s_owner;
     // contract uri for the contract level metadata
-    string  private immutable i_contract_uri;
+    string  private  i_contract_uri;
 
     //events
     event Collection_NFTMintedSuccess(address _to, address _from, uint256 _tokenId);
@@ -125,9 +126,11 @@ contract Collection is Initializable, ERC721Upgradeable, OwnableUpgradeable, Ree
     */
     function mint(string memory _tokenURI) public onlyOwner nonReentrant NotExceedTotalSupply(i_maxTokens, s_tokenCounter) {
         // token URI is a combination image uri and metadata
+        s_tokenCounter += 1; 
         s_tokenIdToTokenURI[s_tokenCounter] = _tokenURI; // create new token
+        //store the reverse mapping : uri => id
+        s_tokenURIToId[_tokenURI] = s_tokenCounter;
         _safeMint(msg.sender, s_tokenCounter); // mint token id to minter
-        s_tokenCounter++; // increment counter after minting
         emit Collection_NFTMintedSuccess(msg.sender, s_owner, s_tokenCounter);
     }
 
@@ -203,7 +206,7 @@ contract Collection is Initializable, ERC721Upgradeable, OwnableUpgradeable, Ree
      function contractURI() public view returns(string memory){
         return i_contract_uri;
      }
-     
+
     //base uri
     function _baseURI() internal pure override returns (string memory) {
         return "data:application/json;base64,";
@@ -251,4 +254,8 @@ contract Collection is Initializable, ERC721Upgradeable, OwnableUpgradeable, Ree
     }
 
     //-------------- views & pure functions --------------------------------------------------
+    function getNextId() public view returns(uint256){
+      uint256 nextId = s_tokenCounter + 1;
+      return nextId;
+    }
 }

@@ -23,6 +23,7 @@ contract TestDeployment is Test {
     string  constant NAME="DANO_SOUR";
     string constant SYMBOL="DASR";
     string constant TOKEN_URI="ipfs://Qm.../metadata/1.json";
+    string constant CONTRACT_URI = "ipfs://Contract./metadata/1.json";
 
     function setUp() public {
         // deal users
@@ -32,7 +33,7 @@ contract TestDeployment is Test {
         deployScript = new DeployCollectionAndCollectionFactory();
         colFacory = deployScript.run();
         vm.prank(OWNER); // owner should be the one who created the contract
-        collection = Collection(colFacory.createCollection(NAME,SYMBOL,MAX_NFT_LIMIT));
+        collection = Collection(colFacory.createCollection(NAME,SYMBOL,MAX_NFT_LIMIT,CONTRACT_URI));
     }
 
 

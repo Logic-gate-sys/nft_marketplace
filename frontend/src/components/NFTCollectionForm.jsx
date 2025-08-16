@@ -17,23 +17,31 @@ export const NFTCollectionForm = () => {
     symbol: "",
     description: "",
     total_supply: 10,
+    file:null
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: name === "total_supply" ? parseInt(value, 10) : value,
-    });
-  };
+  const { name, value, type, files } = e.target;
+
+  setFormData((prev) => ({
+    ...prev,
+    [name]:
+      type === "file"
+        ? files[0]
+        : name === "total_supply"
+        ? parseInt(value, 10) || 0
+        : value,
+  }));
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // starting loading with the spinner
-    setCreating(true);
+    setCreating(false);
     console.log("Form Data:", formData);
-
+   
     try {
       //get signer
       const { signer, wallet } = await connectWallet();
@@ -47,13 +55,27 @@ export const NFTCollectionForm = () => {
         setCreating(false);
         return;
       }
+      // multi-part form data 
+      const file_upload_formdata = new FormData();
+      file_upload_formdata.append("name", formData.name);
+      file_upload_formdata.append("description", formData.description);
+      file_upload_formdata.append("file", formData.file);
+
+      // grab collection uri
+      const upload_res = await axios.post('http://localhost:3000/api/collections/upload', file_upload_formdata);
+      const  collection_uri  = upload_res.data;
+      console.log("COLLECTION URI: ", collection_uri);
+
+      //Now let's create a collection instance
       const { collectionAddress } = await createCollection(
         signer,
         formData.name,
         formData.symbol,
         formData.total_supply
+        ,collection_uri
       );
-      // should contract instance not be retrieved correctly
+
+      // should contract instance not be retrieved correctly : id, contract_addr, total_supply,collection_uri 
       if (!collectionAddress) {
         console.log("Could not get collection contract instance");
         setCreating(false);
@@ -67,15 +89,14 @@ export const NFTCollectionForm = () => {
         return;
       }
 
-      // TODO: send data to your backend or blockchain contract
+      // TODO: send data to your backend
       const res = await axios.post(
-        "http://localhost:3000/api/collections/user",
+        "http://localhost:3000/api/collections/create/collection",
         {
-          name: formData.name,
-          description: formData.description,
           id: user_id,
           contract_addr: collectionAddress,
           total_supply: formData.total_supply,
+          collection_uri: collection_uri
         }
       );
       if (!res) {
@@ -128,6 +149,7 @@ export const NFTCollectionForm = () => {
           />
         </div>
         <div>
+        <label htmlFor="description" className="block text-sm font-medium ">Description</label>
           <textarea
             name="description"
             id="description"
@@ -151,6 +173,19 @@ export const NFTCollectionForm = () => {
               </option>
             ))}
           </select>
+        </div>
+         <div className="flex flex-col gap-1">
+          <label htmlFor="file" className="font-medium">
+            Artwork File
+          </label>
+          <input
+            type="file"
+            name="file"
+            id="file"
+            accept=".jpg,.jpeg,.png,.svg"
+            onChange={handleChange}
+            className="text-sm file:py-2 file:px-4 file:rounded-md file:border-0 file:font-semibold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 bg-gray-700"
+          />
         </div>
         <button
           type="submit"
