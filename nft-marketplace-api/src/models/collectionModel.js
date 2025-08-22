@@ -29,3 +29,17 @@ export const getCollectionAddress = async (id) => {
         throw error;
     }
 }
+
+//------------- get user collecton -------------------------
+export const get_user_collections = async (user_id) => {
+    try {
+        const query = `SELECT * FROM collections WHERE creator_id = $1`;
+        console.log("ID PROVIDED: ", user_id);
+        const res = await pool.query(query, [user_id]);
+        console.log("DB RESULT : ", res.rows);
+        return res.rows;
+    } catch (error) {
+        throw error;
+        return;
+    }
+}

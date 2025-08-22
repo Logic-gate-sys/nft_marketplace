@@ -1,4 +1,4 @@
-import { createCollection, getCollectionAddress } from "../models/collectionModel.js";
+import { createCollection, getCollectionAddress,get_user_collections } from "../models/collectionModel.js";
 import { upload_collection_metadata ,upload_file} from "../util/ipfs_utils.js";
 
 /*
@@ -67,4 +67,17 @@ export const get_collection_address = async (req, res, next) => {
         next(err);
         return 
 }
+}
+
+// get all user coolection 
+export const getUserCollection = async (req, res) => {
+    try {
+        const { id } = req.params;
+        let user_id = id.trim();
+        const result = await get_user_collections(user_id);
+        //send result
+       res.status(200).json(result);
+    } catch(error) {
+        console.log(error);
+   }
 }
