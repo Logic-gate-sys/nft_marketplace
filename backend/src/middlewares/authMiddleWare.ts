@@ -1,4 +1,4 @@
-import { verifyToken } from "../util/jwt.js";
+import { verifyToken } from "../utils/ifpfs";
 
 
 // Method to ensure login is verified from the user

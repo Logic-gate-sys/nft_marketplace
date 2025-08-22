@@ -1,28 +1,33 @@
 import config from "../config/db.js";
 const { pinata } = config;
+// Define the return type (CID is a string from Pinata)
+type CID = string;
 
-// upload file : file is mainly the image
-export const upload_file = async (blobBody, original_name, file_mime) => {
-  try {
-    const file = new File([blobBody], original_name, { type: file_mime });
-    const upload = await pinata.upload.public.file(file); //upload to pinata
-    const image_uri = upload["cid"];
-    if (!image_uri) throw new error();
-    return image_uri;
-  } catch (error) {
-    throw new Error();
-  }
+// Define the argument types
+export const upload_file = async (
+  blobBody: Buffer,
+  original_name: string,
+  file_mime: string
+): Promise<string> => {
+  const blob = new Blob([blobBody], { type: file_mime });
+  const file = new File([blob], original_name, { type: file_mime });
+  const upload: any = await pinata.upload.public.file(file);
+  const image_uri = upload.cid as string;
+  if (!image_uri) throw new Error("CID missing from Pinata response");
+  return image_uri;
 };
+
+
 
 // metadata upload
 export const upload_nft_metadata = async (
-  name,
-  id,
-  description,
-  img_uri,
-  background_col,
-  body,
-  eye
+  name:string,
+  id:number,
+  description:string,
+  img_uri:string,
+  background_col:string,
+  body:string,
+  eye:string
 ) => {
   // metadata
   const metadata = {
@@ -57,9 +62,9 @@ export const upload_nft_metadata = async (
 
 // upload collection metadat
 export const upload_collection_metadata = async (
-  name,
-  description,
-  image_uri
+  name:string,
+  description:string,
+  image_uri:string
 ) => {
   //metadata <--- following opensea's standard for metadata
   const metadata = {

@@ -5,7 +5,7 @@ const Router = express.Router();
 import {
     create_nft, get_all_ntfs, get_nft_byId, delete_nft_byId,
     transfer_nft_ownership,getUserNFTsByStatus, getAllNFTsByUserId
-} from "../controllers/nftController.js";
+} from "../controllers/nftController.ts";
 
 
 
