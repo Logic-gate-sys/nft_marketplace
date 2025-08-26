@@ -5,7 +5,7 @@ type CID = string;
 
 // Define the argument types
 export const upload_file = async (
-  blobBody: Buffer,
+  blobBody: Blob,
   original_name: string,
   file_mime: string
 ): Promise<string> => {
