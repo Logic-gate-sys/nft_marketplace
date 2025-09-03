@@ -4,30 +4,41 @@ import { Avatar } from "antd";
 import { Home, UploadPage, MarketPlace } from "./pages";
 import Nav from "./components/layout/Nav";
 import avatar from './assets/avatar.svg';
-import { connectWallet, login, fetchUserId } from "./ether/wallet_interactions";
+import { connectWallet } from "./ether/wallet_interactions";
+import { createUser, getUserId } from "./services/api";
+import { Popup,Loader } from "./components/effect/helperComponents";
 
 const App: React.FC = () => {
   // Wallet address
   const [address, setAddress] = useState<string>("");
+  const [connected, setConnected] = useState<boolean>(false);
   // User ID from backend
   const [userId, setUserId] = useState<string>("");
+  const message = `Wallet connection successful !, 
+                   Close this button to continue `;
 
-  // Wallet connect handler
+  //----------------------  Wallet connect handler
+  
   const handleWalletConnect = async (): Promise<void> => {
     try {
-      const connection = await connectWallet();
-      if (!connection) return;
-
-      const { signer, wallet } = connection;
-
-      // Login with wallet
-      await login(signer, wallet);
-
-      // Set address and fetch user ID
+      // connect walleta && retrieve signer, and walletAddress
+      const { signer, wallet } = await connectWallet();
+      if (!wallet) {
+        console.log('Could not retrieve walleta address ');
+        return;
+      }
+      //fetch user id
+      let id = await getUserId(wallet);
+      //if user does not exit create one and return it's id
+      if (!id) {
+        const user = await createUser(wallet);
+        console.log("USER RETURNED : ", user);
+        id = user.user_id;
+      }
+      // Set address & and user id
       setAddress(wallet);
-      const id = await fetchUserId(wallet);
-      if (id) setUserId(id);
-
+      setUserId(id);
+      setConnected(true);
     } catch (error) {
       console.error("Wallet connection failed:", error);
     }
@@ -76,6 +87,7 @@ const App: React.FC = () => {
           </Routes>
         </div>
       </div>
+      {connected && <Popup message={message} onClose={()=>setConnected(false)}/>}
     </div>
   );
 };

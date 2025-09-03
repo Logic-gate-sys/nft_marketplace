@@ -1,51 +1,28 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { fetchPinataMetaData } from "../../ether/helperFunction";
-import { createCollection, mintNFT } from "../../ether/contract_interaction";
 import CollectionBoard from "../../components/collection/CollectionBoard";
+import { useQuery } from "@apollo/client/react";
+import { GET_USER_COLLECTIONS } from "../../services/graphql-services";
+import CreateCollectionForm   from './CreateCollectionForm'
+
+//------------------ types interfaces 
+interface Collection {
+  id: string;
+  col_uri: string;
+  metadata?: {
+    name: string;
+    description?: string;
+    [key: string]: any;
+  };
+}
 
 interface UploadPageProps {
-  userId: string;
+   userId: string;
 }
 
 const UploadPage: React.FC<UploadPageProps> = ({ userId }) => {
-  // Example: if you later fetch NFTs
-  // const [nfts, setNfts] = useState<any[]>([]);
-  // const [fetchingCols, setFetchingCols] = useState<boolean>(false);
-  // const [selectedNFT, setSelectedNFT] = useState<any>(null);
-
-  // Uncomment and adapt this useEffect if fetching collections later
-  /*
-  useEffect(() => {
-    const getCollection = async () => {
-      setFetchingCols(true);
-      if (userId) {
-        try {
-          const response = await axios.get(
-            `http://localhost:3000/api/nfts/users/${userId}`
-          );
-          const nft_raw = response.data;
-
-          const withMetadata = await Promise.all(
-            nft_raw.map(async (nft: any) => {
-              const metadata = await fetchPinataMetaData(nft.ipfs_url);
-              return { ...nft, metadata };
-            })
-          );
-
-          setNfts(withMetadata);
-          if (withMetadata[1]) setSelectedNFT(withMetadata[1]);
-          setFetchingCols(false);
-
-          console.log("WITH METADATA: ", withMetadata);
-        } catch (err) {
-          console.error("Failed to fetch collections:", err);
-        }
-      }
-    };
-    getCollection();
-  }, [userId]);
-  */
+  const {loading, error, data} = useQuery(GET_USER_COLLECTIONS, { variables: { userId } });
+  const [selectedCol, setSeletedCol] = useState<Collection[]>();
+  const [showForm, setShowForm] = useState<boolean>(false);
 
   return (
     <div id="upload-page" className="flex flex-col p-6 gap-8">
@@ -61,9 +38,13 @@ const UploadPage: React.FC<UploadPageProps> = ({ userId }) => {
           ERC721 smart contracts
         </section>
       </div>
-
+      <section className="ml-auto">
+        <button onClick={()=>setShowForm(true)} className="bg-blue-600 rounded-xl outline-0 p-2 font-bold ">+Collection</button>
+      </section>
+      {/* CREATE COLLECTION FORM */}
+      { showForm && <CreateCollectionForm setShowForm={setShowForm}/>}
       <div id="collection-board">
-        <CollectionBoard userId={userId} />
+        <CollectionBoard/>
       </div>
     </div>
   );

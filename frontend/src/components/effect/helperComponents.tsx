@@ -2,14 +2,17 @@
  import axios from 'axios';
  import { ethers } from 'ethers';
  
-
+interface popUp{
+  message: string,
+  onClose:() => void
+}
 
 // --------------- pop up for message ---------------------------------
 
-export const Popup = ({ message, onClose }) => {
+export const Popup = ({ message, onClose}: popUp) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white text-black p-6 rounded-lg shadow-xl w-80">
+    <div className="fixed inset-0 bg-gray-600 opacity-65 flex items-center justify-center z-2">
+      <div className="bg-gray-900 text-white p-6 rounded-lg shadow-xl w-80">
         <p className="text-lg font-semibold mb-4">{message}</p>
         <button
           onClick={onClose}

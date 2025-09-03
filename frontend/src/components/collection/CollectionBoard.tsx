@@ -1,123 +1,59 @@
-import React, { useState, useEffect } from "react";
-import { CollectionCard } from "../effect/helperComponents"; // assuming it's TS-ready
-import CollectionListCard from "./CollectionCard";
-import NFTCard from "../nft/NFTCard";
-import { MintForm } from "../form/MintForm";
-import { fetchPinataMetaData } from "../../ether/helperFunction";
-import axios from "axios";
-import { connectWallet, fetchUserId } from "../../ether/wallet_interactions";
 
-// --------- Interfaces for types -----------------
-interface NFT {
-  id: string;
-  name: string;
-  image_uri: string;
-  price: string;
-  owner: string;
-}
+import React from "react";
+import NFTCard from "../ui/ntf-card";
+import CollectionCard from "../ui/collection-card";
+import NFTDetail from "../ui/nft-detail-card";
+import CollectionDetailCard from "../ui/collection-detail";
 
-interface Collection {
-  id: string;
-  col_uri: string;
-  metadata?: {
-    name: string;
-    description?: string;
-    [key: string]: any;
-  };
-}
-
-interface CollectionBoardProps {
-  userId: string;
-}
-
-const CollectionBoard: React.FC<CollectionBoardProps> = ({ userId }) => {
-  // nfts for each collection
-  const [nftsInCol, setNftsInCol] = useState<NFT[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [wantsToMint, setWantsToMint] = useState<boolean>(false);
-  const [fetchingCols, setFetchingCols] = useState<boolean>(false);
-  const [selectedCollectionId, setSelectedCollectionId] = useState<string | undefined>(undefined);
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
-
-  const selectedCollection = collections[selectedIndex];
-
-  // fetch all collections for user
-  useEffect(() => {
-    setFetchingCols(true);
-    console.log("THIS USER'S ID: ", userId);
-    getCollection(userId);
-  }, [userId]);
-
-  // handle selected index
-  const onSelect = (index: number, col_id: string) => {
-    setSelectedIndex(index);
-    console.log("Selected: ", index);
-    setSelectedCollectionId(col_id);
-    console.log("SELECTED COLLECTION ID : ", col_id);
-  };
-
-  // handle minting
-  const handleMint = async () => {
-    setWantsToMint((val) => !val);
-    if (!userId) {
-      const { wallet } = await connectWallet();
-      const newUserId = await fetchUserId(wallet);
-      // Ideally update state instead of overwriting prop
-      console.log("Fetched user ID from wallet: ", newUserId);
-    }
-    const col_id = selectedCollectionId || "0";
-    console.log("Minting to collection: ", col_id);
-  };
-
-  // get the collections
-  const getCollection = async (id: string) => {
-    try {
-      const response = await axios.get<Collection[]>(
-        `http://localhost:3000/api/collections/user/${id}`
-      );
-      console.log("RAW COLLECTION RESPONSE:", response.data);
-
-      const col_raw = response.data;
-      const refine_col_metadata = await Promise.all(
-        col_raw.map(async (col) => {
-          const metadata = await fetchPinataMetaData(col.col_uri);
-          return { ...col, metadata };
-        })
-      );
-      console.log("REFINED COLLECTION METADATA:", refine_col_metadata);
-      setCollections(refine_col_metadata);
-    } catch (err) {
-      console.log("ERROR: ", err);
-    } finally {
-      setFetchingCols(false);
-    }
-  };
-
+export default function CollectionsPage() {
   return (
-    <div>
-      <div id="main-container" className="m-auto grid grid-cols-[2fr_4fr] gap-4 md:px-20 py-4">
-        <div id="col_card">
-          <CollectionListCard
-            collections={collections}
-            selectedIndex={selectedIndex}
-            onSelect={onSelect}
-          />
+    <main className="mx-auto  max-w-7xl space-y-10 p-4 md:p-6">
+      {/* Collections */}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase text-zinc-400">
+          Collections
+        </h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <CollectionCard />
+          <CollectionCard />
+          <CollectionCard />
         </div>
-        <div id="detail_and_nfts" className="flex flex-col gap-4 ">
-          {/* Assuming CollectionInfoCard is a component you have */}
-          {/* <CollectionInfoCard selectedCollection={selectedCollection} /> */}
+      </section>
+      <section>
+        <CollectionDetailCard
+          name="Crypto Ducks"
+          banner="https://picsum.photos/id/1005/1200/300"
+          logo="https://picsum.photos/id/100/200"
+          description="A quirky collection of 10,000 unique ducks living on the Ethereum blockchain. Waddle your way into the community!"
+          floorPrice="0.8"
+          volume="2.5K"
+          owners="1.2K"
+          items="10K"
+        />
 
-          <div>
-            <NFTCard nfts={nftsInCol} />
-            <MintForm
-              col_id={selectedCollectionId || ""}
-              col_name={selectedCollection?.metadata?.name || ""}
-            />
-          </div>
+        {/* NFTs */}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase text-zinc-400">NFTs</h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <NFTCard />
+          <NFTCard />
+          <NFTCard />
+          <NFTCard />
         </div>
-      </div>
-    </div>
+      </section>
+
+          {/* NFT Detail */}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase text-zinc-400">
+          NFT Detail
+        </h2>
+         <NFTDetail />
+        </section>
+        
+       </section>
+
+      
+    
+    </main>
   );
-};
-
-export default CollectionBoard;
+}

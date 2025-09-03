@@ -1,25 +1,20 @@
-import config from "../config/db.js";
-const { pinata } = config;
-// Define the return type (CID is a string from Pinata)
-type CID = string;
+import { pinata } from '../config/config'
 
-// Define the argument types
-export const upload_file = async (
-  blobBody: Blob,
-  original_name: string,
-  file_mime: string
-): Promise<string> => {
+//-----------------------  Define the argument types ------------------------------
+export const uploadImageToPinata = async (blobBody: any, original_name: string, file_mime: string): Promise<string> => {
+  
   const blob = new Blob([blobBody], { type: file_mime });
+
   const file = new File([blob], original_name, { type: file_mime });
   const upload: any = await pinata.upload.public.file(file);
-  const image_uri = upload.cid as string;
-  if (!image_uri) throw new Error("CID missing from Pinata response");
-  return image_uri;
+  const cid = upload.cid as string;
+  if (!cid) throw new Error("CID missing from Pinata response");
+  return cid;
 };
 
 
 
-// metadata upload
+// ------off-chain nft metadata upload ----------------------
 export const upload_nft_metadata = async (
   name:string,
   id:number,
@@ -60,27 +55,33 @@ export const upload_nft_metadata = async (
   }
 };
 
-// upload collection metadat
-export const upload_collection_metadata = async (
-  name:string,
+// ------------------------ upload collection metadat
+export const uploadCollectionMetaData = async (
+  title: string,
+  contractAddress: string,
   description:string,
-  image_uri:string
+  symbol: string,
+  type:string,
+  image_uri: string,
 ) => {
   //metadata <--- following opensea's standard for metadata
   const metadata = {
-    name: name,
-    image: image_uri,
+    title: title,
+    contractAddress: contractAddress,
     description: description,
+    symbol: symbol,
+    type: type,
+    image_uri:image_uri,
     external_link: "https://dano-sour.com",
     seller_fee_basis_points: 500,
-    fee_recipient: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"  // to be upadated later with deployers address
+    fee_recipient: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",  // to be upadated later with deployers address
   };
 
   //metadata blob
   const metadataBlob = new Blob([JSON.stringify(metadata)], {
     type: "application/json",
   });
-  const file = new File([metadataBlob], `${name}.json`, {
+  const file = new File([metadataBlob], `${title}.json`, {
     type: "application/json",
   });
   try {

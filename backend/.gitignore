@@ -42,3 +42,5 @@ temp/
 # Optional: if using Prisma
 prisma/migrations/
 
+
+/src/generated/prisma

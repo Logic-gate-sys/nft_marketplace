@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "module":"ESNext",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": ["DOM", "ESNext"],
@@ -11,6 +12,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"],
+  "include": ["src/","./"],
   "exclude": ["node_modules"]
 }

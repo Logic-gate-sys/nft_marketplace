@@ -1,5 +1,4 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
-import { createCollection } from "../../ether/contract_interaction";
 import { connectWallet,fetchUserId } from "../../ether/wallet_interactions";
 import axios from "axios";
 

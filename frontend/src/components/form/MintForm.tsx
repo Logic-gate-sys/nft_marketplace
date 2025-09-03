@@ -1,5 +1,5 @@
 import { connectWallet,fetchUserId } from "../../ether/wallet_interactions";
-import { mintNFT,getNextNFTID } from "../../ether/contract_interaction";
+import { mintNFT, getNextNFTID } from "../../ether/contract_interaction";
 import axios from "axios";
 import { useState, ChangeEvent, FormEvent } from "react";
 import { Spinner } from "../effect/helperComponents";

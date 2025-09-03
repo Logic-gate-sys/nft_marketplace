@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+//------------------------------- SCHEMAS -------------------------------------------------------------
+model User {
+  user_id     String       @id @default(uuid())
+  username    String?
+  wallet      String       @unique
+  email       String?
+
+  collections Collection[]
+  nfts        Nft[]
+}
+
+model Collection {
+  col_id     Int      @id @default(autoincrement())
+  user_id    String
+  col_uri    String
+  create_at  DateTime @default(now())
+
+  user User   @relation(fields: [user_id], references: [user_id])
+  nfts Nft[]
+}
+
+model Nft {
+  nft_id    Int    @id @default(autoincrement())
+  token_id  String
+  col_id    Int
+  nft_uri   String
+  name      String
+  owner_id  String
+
+  collection Collection @relation(fields: [col_id], references: [col_id])
+  user      User       @relation(fields: [owner_id], references: [user_id])
+}
