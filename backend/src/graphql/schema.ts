@@ -13,38 +13,36 @@ export const typeDefs = `
    }
 
 type Collection {
-  col_id:  ID!
-  col_uri: String!
-  created_at: String
+  id:  ID!
+  URI: String!
+  createdAt: String
   owner: User!
-  nfts: [NFT!]! 
+  nfts: [NFT] 
 }
 
 type NFT {
-nft_id: ID!
+id: ID!
 tokenId: String!
 name: String!
-nft_uri: String
+nftURI: String
 owner: User!
-collection: Collection!
+parentCollection: Collection!
 }
 
 #-------------------------- Queries ---------------------------------------------------
 
 type Query {
-
 getUserByWallet(wallet:String!): [User]                          # get a specific user
 getCollectionByUserId(user_id: String!): [Collection]
-getCollections: [Collection!]!                                   #get all collections
+getCollections: [Collection!]!                                   # get all collections
 getNFTsByCollectionId(col_id: ID!): [NFT]                        # get all nfts in a collection
+
 }
 
 #------------------------ Mutations --------------------------------------------------
-
 type Mutation {
   createUser(username: String, wallet: String!, email: String): User!
 }
-
 `
   ;
 

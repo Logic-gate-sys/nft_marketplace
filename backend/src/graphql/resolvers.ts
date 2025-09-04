@@ -1,3 +1,4 @@
+import { parentPort } from "worker_threads";
 import { getPrismaClient } from "../lib/prisma";
 
 
@@ -16,7 +17,9 @@ export const resolvers = {
         },
         // ----- get all collection
         getCollections: async () => {
-            return await prisma.collection.findMany();
+            return await prisma.collection.findMany(
+                {include:{user: true, nfts: true}}
+            );
         },
         //-----  get user + all the collections they own
         getCollectionByUserId: async (_: any, args: { user_id: string }) => {
@@ -39,7 +42,22 @@ export const resolvers = {
             return await prisma.user.create({
                 data: { username: args.username, wallet: args.wallet, email: args.email }
             });
-        }
-       
+        } 
+    },
+    // --------------------------------------- Type Resolvers ------------------------------------------
+    Collection: {
+        id: (parent: any) => parent.col_id,
+        URI: (parent: any) => parent.col_uri,
+        createdAt: (parent: any) => parent.created_at,
+        owner: (parent:any)=> parent.user,
+        nfts: (parent: any) => parent.nfts
+    },
+    NFT: {
+        id: (parent: any) => parent.nft_id,
+        tokenId: (parent: any) => parent.token_id,
+        nftURI: (parent: any) => parent.nft_uri,
+        owner: (parent: any) => parent.user,
+        parentCollection: (parent:any)=> parent.collection
     }
+
 }

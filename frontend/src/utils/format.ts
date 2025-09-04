@@ -1,4 +1,4 @@
- export const formatIpfsUrl = (cid)=> {
+ export const formatIpfsUrl = (cid: string)=> {
   if (!cid) return "";
   // If already prefixed with ipfs://, strip it
   if (cid.startsWith("ipfs://")) {

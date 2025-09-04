@@ -21,7 +21,7 @@ model User {
   username    String?
   wallet      String       @unique
   email       String?
-
+//references: 
   collections Collection[]
   nfts        Nft[]
 }
@@ -31,7 +31,7 @@ model Collection {
   user_id    String
   col_uri    String
   create_at  DateTime @default(now())
-
+  // type       String   @default("On-Chain")    : this field is already store on pinata
   user User   @relation(fields: [user_id], references: [user_id])
   nfts Nft[]
 }

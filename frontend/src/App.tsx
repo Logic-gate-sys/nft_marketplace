@@ -83,7 +83,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/nft-market" element={<MarketPlace />} />
-            <Route path="/upload" element={<UploadPage userId={userId} />} />
+            <Route path="/upload" element={<UploadPage userId={userId} handleWallectConnect={handleWalletConnect} />} />
           </Routes>
         </div>
       </div>

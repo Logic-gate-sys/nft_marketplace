@@ -29,7 +29,7 @@ export default function NFTCard() {
       {/* Meta */}
       <div className="space-y-2 p-3">
         <h3 className="line-clamp-1 text-sm font-semibold text-white">{nft.name}</h3>
-        <p className="text-xs text-zinc-400">{nft.collectionName} ✅</p>
+        <p className="text-xs text-zinc-400">{nft.collectionName} </p>
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold text-white">{nft.priceEth} ETH</span>
           <span className="text-xs text-zinc-400">❤️ {nft.likes}</span>

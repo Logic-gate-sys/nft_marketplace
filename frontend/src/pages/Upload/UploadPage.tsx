@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import CollectionBoard from "../../components/collection/CollectionBoard";
 import { useQuery } from "@apollo/client/react";
 import { GET_USER_COLLECTIONS } from "../../services/graphql-services";
-import CreateCollectionForm   from './CreateCollectionForm'
+import CreateCollectionForm from "./CreateCollectionForm";
+import { GetCollectionByUserIdData } from "../../services/types";
+import { collectionFactoryAbi } from "../../../../shared/constants/contract-constants";
 
-//------------------ types interfaces 
+//------------------ types interfaces
 interface Collection {
   id: string;
   col_uri: string;
@@ -16,35 +18,77 @@ interface Collection {
 }
 
 interface UploadPageProps {
-   userId: string;
+  userId: string;
+  handleWallectConnect: () => void;
 }
 
-const UploadPage: React.FC<UploadPageProps> = ({ userId }) => {
-  const {loading, error, data} = useQuery(GET_USER_COLLECTIONS, { variables: { userId } });
-  const [selectedCol, setSeletedCol] = useState<Collection[]>();
+
+
+
+const UploadPage: React.FC<UploadPageProps> = ({userId, handleWallectConnect}) => {
+  const { loading, error, data } = useQuery<GetCollectionByUserIdData>( GET_USER_COLLECTIONS, { variables: { userId } } );
+  // if loading return loading 
+  const [selectedCol, setSeletedCol] = useState<Collection[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
+  const [wallet, setWallet] = useState<string>("");
+  const [userCollections, setUserCollections] = useState<any[]>();
+
+  //use effect to connect wallet:
+  useEffect(() => {
+    const connect = () => {
+      if (!userId) {
+        handleWallectConnect();
+      }
+    };
+    connect();
+  }, []);
+
+  //--------------------- retrieve user collections: cast data to any
+  useEffect(() => {
+    const refineCollections = async () => {
+      const refined = await Promise.all(
+        (data?.getCollectionByUserId ?? []).map(async (col) => {
+          const httpFromCID = col.URI?.replace(
+            "ipfs://",
+            "https://gateway.pinata.cloud/ipfs/"
+          );
+          const res = await fetch(httpFromCID);
+          const col_metaData = await res.json();
+          //attach metadata to all collections
+          return {
+            ...col,
+            col_metaData,
+          };
+        })
+      );
+      // set collection
+      console.log("ARRAY: ", refined);
+      setUserCollections(refined);
+    };
+    refineCollections();
+  }, [data]);
+
+  console.log("Refined array: ", userCollections);
 
   return (
-    <div id="upload-page" className="flex flex-col p-6 gap-8">
+    <div id="upload-page" className="flex flex-col p-2 gap-2">
       <div id="word-of-page" className="self-center">
         <h1 className="text-center text-3xl font-bold text-purple-400">
-          MANAGE YOUR COLLECTIONS
+          MANAGE COLLECTIONS
         </h1>
-        <section className="text-2xl">
-          Store unique collectible characters with proof of ownership backed by{" "}
-          <span className="text-purple-800 text-2xl font-bold">
-            Danno's
-          </span>{" "}
-          ERC721 smart contracts
-        </section>
       </div>
       <section className="ml-auto">
-        <button onClick={()=>setShowForm(true)} className="bg-blue-600 rounded-xl outline-0 p-2 font-bold ">+Collection</button>
+        <button
+          onClick={() => setShowForm(true)}
+          className="bg-blue-600 rounded-xl outline-0 p-2 font-bold "
+        >
+          +Collection
+        </button>
       </section>
       {/* CREATE COLLECTION FORM */}
-      { showForm && <CreateCollectionForm setShowForm={setShowForm}/>}
+      {showForm && <CreateCollectionForm setShowForm={setShowForm} />}
       <div id="collection-board">
-        <CollectionBoard/>
+        <CollectionBoard collection={userCollections} />
       </div>
     </div>
   );

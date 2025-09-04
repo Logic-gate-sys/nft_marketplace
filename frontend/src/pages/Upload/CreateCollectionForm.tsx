@@ -102,6 +102,7 @@ const CreateCollectionForm = ({ setShowForm }: FormProp) => {
         return;
       }
       alert("Collection created sucessfully");
+      setShowForm(false)
 
     } catch (err) {
       console.log(err);
