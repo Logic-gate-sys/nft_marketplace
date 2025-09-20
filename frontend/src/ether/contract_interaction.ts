@@ -1,11 +1,6 @@
-import { ethers, Signer, Provider } from "ethers";
-import {
-  CAKE_ADDRESS,
-  cakeNFTAbi,
-} from "../../../shared/constants/contract-constants";
+import { ethers, Signer, Provider, Signature } from "ethers";
 import axios from "axios";
-import { AsyncResource } from "async_hooks";
-
+import { syncBuiltinESMExports } from "module";
 const ETHERSCAN_API_KEY = import.meta.env.VITE_ETHERSCAN_API_KEY;
 const ETHERSCAN_BASE_URL = "https://api.etherscan.io/api";
 
@@ -22,6 +17,7 @@ const ETHERSCAN_BASE_URL = "https://api.etherscan.io/api";
 /**
  * @remarks
  * This function does not create a new contract , just retrieve and instance of already deployed contract
+ * -for a deploy contract the abi comes from etherscan
  * @param signer - owner of and account
  * @param address - contract address
  * @param abi - abi of the contract address
@@ -45,6 +41,32 @@ export const getWriteContractInstance = async (
   }
 };
 
+
+/**
+ * @contexts for testing only: 
+ *  This uses the factory pattern
+ * string memory name,
+        string memory symbol,
+        uint256 total_supply,
+        string memory contract_uri
+ */
+export const getCollectionInstanceFromFactory = async (
+  factoryInstance: any,
+  name: string,
+  symbol: string,
+  total_supply: number,
+  contract_uri:string
+): Promise<any> => {
+  const collectionCloneAddress = await factoryInstance.createCollection(name,symbol,total_supply);
+  if (!collectionCloneAddress) {
+    console.log("Could not get collection instance ");
+    return;
+  }
+  const collectionCloneInstance = new ethers.Contract(collectionCloneAddress,collecion);
+}
+
+
+
 /**
  * @remarks This deals with the contract instance that we can only perform read operations on
  * @param address - contract address
@@ -54,7 +76,7 @@ export const getReadOnlyContractInstance = async (
   address: string,
   abi: any,
   provider: Signer
-): any => {
+) => {
   const readableContract = new ethers.Contract(address, abi, provider);
   if (!readableContract) {
     console.log("Could not get Readable contract instance!");
@@ -63,6 +85,8 @@ export const getReadOnlyContractInstance = async (
     return readableContract;
   }
 };
+
+
 
 /**
  * @remarks
@@ -86,41 +110,81 @@ export async function fetchAbiFromEtherscan(address: string): Promise<any[]> {
 }
 
 
-/**
- * 
- * @param provider 
- * @param collection_addr 
- * @returns 
- */
-export const getNextNFTID = async (provider, collection_addr) => {
-  const readable_collection_contract = new ethers.Contract(
-    collection_addr,
-    collection_abi.abi,
-    provider
-  );
-  const previous_id = await readable_collection_contract.getNextId();
-  return previous_id.toNumber();
-};
+// /**
+//  * 
+//  * @param provider 
+//  * @param collection_addr 
+//  * @returns 
+//  */
+// export const getNextNFTID = async (provider, collection_addr) => {
+//   const readable_collection_contract = new ethers.Contract(
+//     collection_addr,
+//     collection_abi.abi,
+//     provider
+//   );
+//   const previous_id = await readable_collection_contract.getNextId();
+//   return previous_id.toNumber();
+// };
 
-// ---------------------- mint into collection ----------------------------
-export const mintNFT = async (signer:any, collection_addr:string, ipfs_uri:string) => {
+
+//---------------------------------- mint Onchain function -----------------------
+export const mintOnChain = async ( contractInstance: any) => {
   try {
-    //get the writeable contract instance
-    const collection_contract = new ethers.Contract(
-      collection_addr,
-      collection_abi.abi,
-      signer
-    );
-    // now mint
-    const trx = await collection_contract.mint(ipfs_uri);
+    const trx = await contractInstance.bakeCake(); //<--------------- bakeCake is not a standard mint function
     const receipt = await trx.wait();
+    //if transaction producess no receipt
     if (!receipt) {
-      console.log("COULD NOT MINT NFT : ");
+      console.log("Could not Mint");
       return;
     }
-    return receipt;
-  } catch (error) {
-    console.log(error);
+    // return receipt
+    return receipt
+  } catch (err) {
+    console.log(err);
     return;
   }
-};
+
+}
+
+// --------------------------------- mint OffChain function ----------------------------
+export const mintOffChain = async (contractInstance:any, URI:string) => {
+  const trx = await contractInstance.mint(URI);
+  if (!trx) {
+    console.log("Off chain minting failed! ");
+    return;
+  }
+  const receipt = await trx.wait();
+  if (!receipt) {
+    console.log("No off-chain mint receipt found ");
+    return;
+  }
+
+  return receipt;
+}
+
+/**
+ * 
+ * @param contractInstance : nft contract whose nft is being listed
+ * @param marketPlaceAddr  : address of the market place contract 
+ * @param tokenId : Token to be listed on the market place
+ * @returns 
+ */
+export const approveMarketPlace = async (contractInstance: any, marketPlaceAddr: string, tokenId: number): Promise<boolean> => {
+  const trx = await contractInstance.approve(marketPlaceAddr, tokenId);
+  const receipt = await trx.wait();
+  if (!receipt) {
+    console.log("Approval for market Place failed")
+    return false;
+  }
+  // if transaction was throw 
+  return true;
+}
+
+
+// list nft 
+
+export const listNFT = async(marketPlaceInstance:any, _nftAddress: string, _tokenId: bigint, _price: bigint) => {
+  const trx = await marketPlaceInstance.listNFT(_nftAddress, _tokenId, _price);
+  const receipt = await trx.wait(); // for for transacition to be minded 
+
+}

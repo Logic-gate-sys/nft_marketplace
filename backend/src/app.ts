@@ -6,6 +6,7 @@ import collectionRouter from '../src/route/collectionRoute';
 import { schema } from './graphql/schema';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@as-integrations/express5';
+import nftRouter from './route/nftRoute';
 
 
 //app configuration
@@ -20,6 +21,9 @@ app.use('/api/users', userRouter);
 
 // collections end poing e.g http://localhost:3000/api/collections
 app.use('/api/collections', collectionRouter);
+
+// nft endpoint e.g http://localhost:3000/api/nfts
+app.use('/api/nfts', nftRouter);
 
 
 //============================== GRAPHQL---Endpoints ====================================================

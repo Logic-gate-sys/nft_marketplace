@@ -7,7 +7,8 @@ const prisma = getPrismaClient();
 // creacte collection
 export const createCollection = async (req: Request, res: Response) => {
     // get fields require to create collection
-    const {title, contractAddress, description, symbol, type, user_id} = req.body;
+    const { title, contractAddress, description, symbol, type, user_id } = req.body;
+    //------------ for On-chain there is no need for ipfs
     // file
     const file = req.file;
     if (!file) {

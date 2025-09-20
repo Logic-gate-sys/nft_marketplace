@@ -1,3 +1,4 @@
+import { NameArgs } from '@prisma/client/runtime/library';
 import { pinata } from '../config/config'
 
 //-----------------------  Define the argument types ------------------------------
@@ -93,4 +94,41 @@ export const uploadCollectionMetaData = async (
     throw error;
     return;
   }
+}
+
+/**
+ * nft_id    Int    @id @default(autoincrement())
+  token_id  String
+  col_id    Int
+  nft_uri   String?
+  name      String
+  owner_id  String
+
+ */
+export const upload_nftMetaData_pinata = async (
+  name:string,
+  image_uri: string,
+  background: string,
+  body:string,
+  description: string,
+  eye: string) => {
+  const metaData = {
+    image: image_uri,
+    background: background,
+    body:body,
+    description: description,
+    eye: eye
+  }
+  try {
+    //create a blob
+    const metaDataBlob = new Blob([JSON.stringify(metaData)], { type: 'application/json' });
+    //create file from blob
+    const file = new File([metaDataBlob], `${name}.json`, { type: 'application/json' });
+    const upload = await pinata.upload.public.file(file);
+    if (!upload?.cid) throw new Error();
+    return `ipfs://${upload.cid}`;
+  } catch (err) {
+    throw new Error();
+  }
+  
 }

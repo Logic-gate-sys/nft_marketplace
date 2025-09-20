@@ -62,7 +62,7 @@ const App: React.FC = () => {
         {/* Top bar */}
         <div
           id="semi-nav"
-          className="flex justify-center ml-auto pl-3 pr-3 gap-3"
+          className=" flex justify-center ml-auto pl-3 pr-3 gap-3"
         >
           <input
             type="search"

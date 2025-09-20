@@ -23,7 +23,7 @@ const CreateCollectionForm = ({ setShowForm }: FormProp) => {
     contractAddress: "",
     description: "",
     symbol: "",
-    type: "",
+    type: "On-Chain",
     file: null as File | null,
   });
 //title, contractAddress, description, symbol, type, user_id
@@ -52,17 +52,16 @@ const CreateCollectionForm = ({ setShowForm }: FormProp) => {
     // retrieve contract address
     const contractAddress = formData.contractAddress;
     try {
-      //use etherscan to get contract abi
-      const abi = await fetchAbiFromEtherscan(contractAddress.trim());
-      console.log("ABI: ", abi);
-      //if abi does not exist ; contract is invalid
-      if (!abi) {
-        console.error("Invalid contract address");
-        return;
-      }
+      // //use etherscan to get contract abi
+      // const abi = await fetchAbiFromEtherscan(contractAddress.trim());
+      // console.log("ABI: ", abi);
+      // //if abi does not exist ; contract is invalid
+      // if (!abi) {
+      //   console.error("Invalid contract address");
+      //   return;
+      // }
 
       //get user wallet
-
       const connection = await connectWallet();
       if (!connection) return;
       const {  provider, signer, wallet } = connection;
@@ -187,7 +186,8 @@ const CreateCollectionForm = ({ setShowForm }: FormProp) => {
             <label htmlFor="type"> Type: </label>
             <select
               name="type"
-              id="type"
+                id="type"
+                value={formData.type}
               required
               onChange={(e) =>
                 setFormData((prev) => ({

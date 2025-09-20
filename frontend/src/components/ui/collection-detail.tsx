@@ -2,6 +2,7 @@ import React from "react";
 
 interface CollectionDetailCardProps {
   name: string;
+  type: string;
   banner: string;
   logo: string;
   description: string;
@@ -13,6 +14,7 @@ interface CollectionDetailCardProps {
 
 const CollectionDetailCard: React.FC<CollectionDetailCardProps> = ({
   name,
+  type,
   banner,
   logo,
   description,
@@ -41,7 +43,10 @@ const CollectionDetailCard: React.FC<CollectionDetailCardProps> = ({
 
       {/* Info */}
       <div className="pt-14 px-6 pb-6">
-        <h2 className="text-2xl font-bold mb-2">{name}</h2>
+        <section className="flex">
+          <h2 className="text-2xl font-bold mb-2">{name}</h2>
+          <h2 className="ml-auto text-zinc-600 text-lg font-bold mb-2"> {type}</h2>
+        </section>
         <p className="text-gray-60 opacity-60 text-sm mb-4">{description}</p>
 
         {/* Stats */}
@@ -68,20 +73,5 @@ const CollectionDetailCard: React.FC<CollectionDetailCardProps> = ({
   );
 };
 
-// Dummy example
-export const DummyCollectionDetail = () => (
-  <div className="max-w-4xl mx-auto mt-10">
-    <CollectionDetailCard
-      name="Crypto Ducks"
-      banner="https://picsum.photos/id/1005/1200/300"
-      logo="https://picsum.photos/id/100/200"
-      description="A quirky collection of 10,000 unique ducks living on the Ethereum blockchain. Waddle your way into the community!"
-      floorPrice="0.8"
-      volume="2.5K"
-      owners="1.2K"
-      items="10K"
-    />
-  </div>
-);
 
 export default CollectionDetailCard;

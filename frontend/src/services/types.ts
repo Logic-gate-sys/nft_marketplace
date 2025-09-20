@@ -2,7 +2,7 @@
 export type NFT = {
   nft_id: string;
   tokenId: string;
-  nft_uri: string;
+  nftURI: string;
   name: string;
   owner: {
     user_id: string;
