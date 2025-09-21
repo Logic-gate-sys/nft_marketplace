@@ -5,7 +5,7 @@ import CollectionDetailCard from "../ui/collection-detail";
 import { formatIpfsUrl } from "../../utils/format";
 import { ChangeEvent, useState } from "react";
 import { MintForm } from "../form/MintForm";
-import { cakeNFTAbi,workHorseAbi, MARKET_PLACE_ADDRESS, CAKE_ADDRESS, marketPlaceAbi } from "../../../../shared/constants/contract-constants";
+import { cakeNFTAbi, MARKET_PLACE_ADDRESS, CAKE_ADDRESS, marketPlaceAbi } from "../../../../shared/constants/contract-constants";
 import { connectWallet } from "../../ether/wallet_interactions";
 import { getWriteContractInstance, approveMarketPlace, listNFT } from "../../ether/contract_interaction";
 import { Spinner } from "../effect/helperComponents";
@@ -19,6 +19,7 @@ export default function CollectionsPage({ collection }: any) {
   //------------------------- hooks ---------------------------------------------
   const [selColIndex, setSelColIndex] = useState<number>(); // <<------- first collection index is selected by default
   const [selectedCol, setSeletedCol] = useState(collection?.[0]);
+  const [selTokenId, setSelTokenId] = useState();
   const [wantsToMint, setWantsToMint] = useState<boolean>(false);
   const [wantsToList, setWantsToList] = useState<boolean>(false);
   const [price, setPrice] = useState<number>(0);
@@ -30,7 +31,7 @@ export default function CollectionsPage({ collection }: any) {
     //set selected colllection
     setSeletedCol(() => collection?.[index]);
   };
-  console.log("SELECTED INDEX: -------->>> ", selColIndex);
+  console.log("SELECTED COLLECTION INDEX: -------->>> ", selColIndex);
   console.log("SELECTED COLLECTION:-------->>>", selectedCol);
 
   // -------------------- handle price change ---------------------
@@ -43,7 +44,7 @@ export default function CollectionsPage({ collection }: any) {
   const handleListNFT = async () => {
     try {
       setLoading(true)
-      const tokenId = selectedCol?.nfts?.tokenId;
+      const tokenId = selTokenId;
       if (!tokenId) {
         console.log("----------- NO TOKEN ID ------------")
         setLoading(false);
@@ -51,11 +52,11 @@ export default function CollectionsPage({ collection }: any) {
       }
       console.log("TOKEN ID : ", tokenId);
       const nFTContractAddress = selectedCol?.col_metaData.contractAddress;
-
+    
       // wallect connect
       const { signer, wallet, provider } = await connectWallet();
       // nft contract instance
-      const nftContractInstance = getWriteContractInstance(
+      const nftContractInstance = await getWriteContractInstance(
         nFTContractAddress,
         cakeNFTAbi,
         signer
@@ -65,25 +66,29 @@ export default function CollectionsPage({ collection }: any) {
         console.log("No contract instance found");
         return;
       }
+       console.log("CONTRACT INSTANCE: ", nftContractInstance);
       // approve marketplace  to list nft
       const approved = await approveMarketPlace(nftContractInstance, MARKET_PLACE_ADDRESS, tokenId);
       if (!approved) {
         console.log("Approval failed");
         setLoading(false);
       }
+      console.log("------------- Approval successful --------------------------")
       //marketPlace contract instance
       const marketPlaceInstance = await getWriteContractInstance(MARKET_PLACE_ADDRESS, marketPlaceAbi, signer);
       // list nft
-      const receipt = await listNFT(marketPlaceInstance, CAKE_ADDRESS, BigInt(tokenId), BigInt(price));
+      const receipt = await listNFT(marketPlaceInstance, nFTContractAddress, BigInt(tokenId), BigInt(price));
       const result = getListedLogs(receipt);
       if (!result) {
         console.log("Listing failed");
         setLoading(false);
         return;
       }
+      console.log("NFT LISTING RECEIPT:----->>> " , receipt);
       const { _nftAddress, _tokenID, _price } = result;
       //------------- on successful listing 
       setLoading(false);
+      setWantsToList(false);
     } catch (err) {
       setLoading(false);
       console.log(err);
@@ -102,7 +107,7 @@ export default function CollectionsPage({ collection }: any) {
       <section id="col-to-detaisl" className="grid grid-cols-[1.5fr_5fr] gap-1">
         {/*============================ Collection ===================== */}
         <section>
-          <div className="h-screen overflow-y-auto border-zinc-800 border-2 p-2 rounded-2xl flex flex-col gap-2 ">
+          <div className="h-screen overflow-y-scroll scrollbar-hide border-zinc-800 border-2 p-2 rounded-2xl flex flex-col gap-2 ">
             {collection?.map((col: any, id: any) => {
               const image = formatIpfsUrl(col.col_metaData.image_uri);
               const title = col.col_metaData.title;
@@ -141,7 +146,7 @@ export default function CollectionsPage({ collection }: any) {
             owners={`${selectedCol?.owner.wallet.slice(0, 12)}...`}
             items={selectedCol?.nfts.length}
           />
-          {/* NFTs */}
+          {/*------------------->> NFTs */}
           <section>
             <h2 className="mb-3 text-sm font-semibold uppercase text-zinc-400">
               NFTs
@@ -168,6 +173,7 @@ export default function CollectionsPage({ collection }: any) {
                     collectionName={collectionName}
                     tokenId={tokenId}
                     setWantsToList={setWantsToList}
+                    setTokenId={()=>setSelTokenId(nft?.tokenId)}
                   />
                 );
               })}
@@ -185,6 +191,7 @@ export default function CollectionsPage({ collection }: any) {
             )}
           </section>
         </section>
+        {/* -------------------------------- LIST FORM ---------------------------- */}
         {wantsToList && (
             <section>
               <div className="fixed  inset-0 flex items-center justify-center bg-black bg-opacity-50 z-99">
@@ -201,12 +208,12 @@ export default function CollectionsPage({ collection }: any) {
                     type="number"
                     step="0.01"
                     placeholder="Enter price"
-                    onChange={()=>handlePriceChange}
+                    onChange={handlePriceChange}
                     className="w-full px-4  text-black py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
                 <section className="flex gap-3">
-                  <button onClick={ handleListNFT}  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl transition">
+                  <button onClick={handleListNFT}  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl transition">
                     List NFT
                   </button>
                   <button

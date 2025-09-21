@@ -5,6 +5,7 @@ interface nftProp {
   image: string;
   name: string;
   collectionName: string;
+  setTokenId: (tokenId: any) => void;
   setWantsToList : (val: boolean) => void
 }
 
@@ -13,6 +14,7 @@ export default function NFTCard({
   name,
   collectionName,
   tokenId,
+  setTokenId,
   setWantsToList
 }: nftProp) {
   
@@ -37,7 +39,11 @@ export default function NFTCard({
         <p className="text-xs text-zinc-400">{collectionName} </p>
         <div className=" flex justify-center, items-center">
           <button
-            onClick={() => setWantsToList(true)}
+            onClick={() => {
+              setWantsToList(true);
+              setTokenId(tokenId);
+            }}
+            
             className="bg-blue-500 px-5 py-1 rounded-lg font-semi-bold hover:bg-orange-500 self-center"
           >
             List

@@ -15,9 +15,7 @@ interface UploadPageProps {
 }
 
 
-
-
-const UploadPage: React.FC<UploadPageProps> = ({userId, handleWallectConnect}) => {
+  const UploadPage: React.FC<UploadPageProps> = ({userId, handleWallectConnect}) => {
   const { loading, error, data } = useQuery<GetCollectionByUserIdData>(GET_USER_COLLECTIONS, { variables: { userId } });
   const [userCollections, setUserCollections] = useState<Collection[]>();
   const [showForm, setShowForm] = useState<boolean>(false);

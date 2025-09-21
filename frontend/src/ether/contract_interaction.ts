@@ -1,6 +1,5 @@
 import { ethers, Signer, Provider, Signature } from "ethers";
 import axios from "axios";
-import { syncBuiltinESMExports } from "module";
 const ETHERSCAN_API_KEY = import.meta.env.VITE_ETHERSCAN_API_KEY;
 const ETHERSCAN_BASE_URL = "https://api.etherscan.io/api";
 
@@ -64,7 +63,6 @@ export const getCollectionInstanceFromFactory = async (
   }
   const collectionCloneInstance = new ethers.Contract(collectionCloneAddress,collecion);
 }
-
 
 
 /**
@@ -161,6 +159,7 @@ export const mintOffChain = async (contractInstance:any, URI:string) => {
 
   return receipt;
 }
+  
 
 /**
  * 
@@ -180,11 +179,21 @@ export const approveMarketPlace = async (contractInstance: any, marketPlaceAddr:
   return true;
 }
 
-
-// list nft 
-
+ 
+/**
+ * 
+ * @param marketPlaceInstance 
+ * @param _nftAddress 
+ * @param _tokenId 
+ * @param _price 
+ */
 export const listNFT = async(marketPlaceInstance:any, _nftAddress: string, _tokenId: bigint, _price: bigint) => {
-  const trx = await marketPlaceInstance.listNFT(_nftAddress, _tokenId, _price);
+  const trx = await marketPlaceInstance.listNft(_nftAddress, _tokenId, _price);
   const receipt = await trx.wait(); // for for transacition to be minded 
-
+  if (!receipt) {
+    console.log("----- Listing is reverted ---->>")
+    return;
+  }
+  // return receipt
+  return receipt;
 }

@@ -43,7 +43,27 @@ model Nft {
   nft_uri   String?
   name      String
   owner_id  String
-
   collection Collection @relation(fields: [col_id], references: [col_id])
   user      User       @relation(fields: [owner_id], references: [user_id])
+}
+
+//----------------------- Transaction Related ----------------------------
+model Listings {
+  listing_id    Int  @id@default(autoincrement())
+  col_id        Int    
+  nft_id        Int
+  price         BigInt
+  owner         String
+  listed_at     DateTime @default(now())
+  collection Collection @relation(fields: [col_id], references: [col_id])
+}
+
+
+model Sold {
+  trx_id        Int @id@default(autoincrement())
+  tokenId       Int
+  from          String 
+  to            String
+  amount        Int
+  at            DateTime @default(now())
 }
