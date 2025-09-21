@@ -1,11 +1,5 @@
-Perfect 👌 thanks for sharing all this.
-I’ll **refine, clean, and format** your README while preserving every detail you’ve provided.
-Here’s a polished, professional version:
-
----
 
 #  NFT Marketplace
-
 Welcome to the **NFT Marketplace** project!
 This is a **full-stack decentralized application (dApp)** that allows users to **mint, buy, sell, and manage NFTs (Non-Fungible Tokens) and collections**.
 
