@@ -1,174 +1,302 @@
-# NFT Marketplace
 
-Welcome to the NFT Marketplace project! This is a full-stack decentralized application (dApp) that allows users to mint, buy, sell, and manage NFTs (Non-Fungible Tokens) and collections. The project is organized into three main parts: the smart contracts, the backend API, and the frontend web application.
+#  NFT Marketplace
+Welcome to the **NFT Marketplace** project!
+This is a **full-stack decentralized application (dApp)** that allows users to **mint, buy, sell, and manage NFTs (Non-Fungible Tokens) and collections**.
 
----
+The project is organized into three main parts:
 
-## Table of Contents
-
-- [Project Structure](#project-structure)
-- [Features](#features)
-- [How It Works](#how-it-works)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Setup Instructions](#setup-instructions)
-- [Smart Contracts](#smart-contracts)
-- [Backend API](#backend-api)
-- [Frontend](#frontend)
-- [Development Guidelines](#development-guidelines)
-- [Security](#security)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+1. **Smart Contracts** → Solidity contracts (via Foundry) for minting, collections, transfers.
+2. **Backend API** → Node.js/Express with PostgreSQL + IPFS integration.
+3. **Frontend** → React + Vite dApp with wallet connection.
 
 ---
 
-## Project Structure
-nft_marketplace/ │ ├── frontend/ # React-based web application ├── nft_contract/ # Solidity smart contracts (Foundry) ├── nft-marketplace-api/ # Node.js/Express backend API ├── README.md # Project overview (this file) └── ...
+##  Table of Contents
 
+* [Project Structure](#-project-structure)
+* [Features](#-features)
+* [How It Works](#-how-it-works)
+* [Getting Started](#-getting-started)
 
----
-
-## Features
-
-- **User Registration & Authentication:**  
-  Users register with email, wallet address, and name. Login is via wallet address.
-
-- **Wallet Integration:**  
-  Users connect their crypto wallet to interact with the marketplace.
-
-- **NFT Minting:**  
-  Users can mint new NFTs by uploading their work (e.g., images) and metadata.
-
-- **Collections:**  
-  Users can create collections to organize their NFTs.
-
-- **Marketplace:**  
-  List NFTs for sale, buy NFTs, and participate in auctions.
-
-- **Ownership & Transfers:**  
-  Secure transfer of NFT ownership on-chain.
-
-- **Admin Tools:**  
-  Admins can manage users, NFTs, and handle reports or fraud.
-
-- **Analytics:**  
-  Track sales, volume, and user activity.
+  * [Prerequisites](#prerequisites)
+  * [Setup Instructions](#setup-instructions)
+* [Smart Contracts](#-smart-contracts)
+* [Backend API](#-backend-api)
+* [Frontend](#-frontend)
+* [Development Guidelines](#-development-guidelines)
+* [Security](#-security)
+* [Unique Selling Points](#-unique-selling-points)
+* [Summary](#-summary)
+* [License](#-license)
+* [Acknowledgements](#-acknowledgements)
 
 ---
 
-## How It Works
+##  Project Structure
 
-1. **User Onboarding:**  
-   Users sign up and connect their wallet. The backend verifies wallet ownership.
-
-2. **Minting NFTs:**  
-   Users upload files (stored on IPFS) and metadata (stored in Postgres DB). The smart contract mints the NFT on-chain.
-
-3. **Listing & Buying:**  
-   Owners can list NFTs for sale. Buyers purchase NFTs using their wallet. Ownership is transferred on-chain and reflected in the backend.
-
-4. **Collections:**  
-   Users can group NFTs into collections, which can also be listed for sale or auctioned.
-
-5. **Synchronization:**  
-   The backend listens to blockchain events to keep the database in sync with on-chain data.
+```
+nft_marketplace/
+ ├── frontend/              # React-based web application
+ ├── nft_contract/          # Solidity smart contracts (Foundry)
+ ├── nft-marketplace-api/   # Node.js/Express backend API
+ ├── README.md              # Project overview (this file)
+ └── ...
+```
 
 ---
 
-## Getting Started
+##  Features
 
-### Prerequisites
+* **User Registration & Authentication**
 
-- Node.js (v18+ recommended)
-- npm or yarn
-- Foundry (for Solidity smart contract development)
-- PostgreSQL (for backend database)
-- IPFS node or pinning service (for file storage)
-- MetaMask or compatible wallet (for testing)
+  * Register with email, wallet address, and name.
+  * Login via wallet connection.
 
-### Setup Instructions
+* **Wallet Integration**
 
-#### 1. Clone the Repository
+  * MetaMask & wallet connect for interaction.
+
+* **NFT Minting**
+
+  * Upload images & metadata → stored on **IPFS**.
+  * Mint NFT on-chain & sync backend DB.
+
+* **Collections**
+
+  * Create and manage collections.
+  * Group NFTs and list them individually or as a set.
+
+* **Marketplace**
+
+  * List NFTs for sale or auction.
+  * Buy NFTs using crypto.
+  * Transfer ownership securely on-chain.
+
+* **Admin Tools**
+
+  * Manage users, NFTs, fraud reports.
+
+* **Analytics**
+
+  * Track sales, marketplace volume, and user activity.
+
+---
+
+##  How It Works
+
+1. **User Onboarding**
+
+   * Sign up with wallet + email.
+   * Backend verifies ownership (nonce + signature).
+
+2. **Minting NFTs**
+
+   * File → uploaded to IPFS.
+   * Metadata → stored in DB.
+   * Smart contract mints NFT → updates backend.
+
+3. **Listing & Buying**
+
+   * Owners list NFTs.
+   * Buyers purchase with crypto.
+   * Ownership transferred on-chain & DB synced.
+
+4. **Collections**
+
+   * NFTs grouped into collections.
+   * Can be listed or auctioned.
+
+5. **Synchronization**
+
+   * Backend listens to **blockchain events** (`Transfer`, `Minted`) to stay up-to-date.
+
+---
+
+##  Getting Started
+
+###  Prerequisites
+
+* Node.js (v18+)
+* npm / yarn
+* Foundry (for Solidity contracts)
+* PostgreSQL
+* IPFS node or pinning service (e.g., Pinata)
+* MetaMask or compatible wallet
+
+###  Setup Instructions
 
 ```sh
+# Clone repository
 git clone <repo-url>
 cd nft_marketplace
+```
 
-2. Install Dependencies
- - Frontend:
+#### Install Dependencies
+
+* **Frontend**
+
+  ```sh
   cd frontend
   npm install
+  ```
 
- - backend: 
-cd ../nft-marketplace-api
-npm install
+* **Backend**
 
- - Smart Contract: 
- cd ../nft_contract
-# Install Foundry if not already installed
-foundryup
+  ```sh
+  cd ../nft-marketplace-api
+  npm install
+  ```
 
-. Configure Environment Variables
-Copy .env.example to .env in each subproject and fill in the required values (database URL, API keys, etc.).
-4. Run the Application
+* **Smart Contracts**
 
-Start Backend API:
+  ```sh
+  cd ../nft_contract
+  foundryup
+  ```
+
+#### Configure Environment Variables
+
+* Copy `.env.example` → `.env` in each subproject.
+* Add keys (DB URL, API keys, IPFS keys, etc.).
+
+#### Run the Application
+
+```sh
+# Backend API
 cd nft-marketplace-api
 npm start
 
-- Deploy Smart contract (local): 
+# Smart Contracts (local test)
 cd ../nft_contract
 forge test
-# or deploy to a testnet as needed
 
-- Start frontend: 
+# Frontend
 cd ../frontend
 npm run dev
+```
 
-Smart Contracts
-Located in nft_contract/
-Written in Solidity using Foundry
+---
+
+##  Smart Contracts
+
+* Located in `nft_contract/`.
+* Written in **Solidity** with Foundry.
+* Uses **OpenZeppelin** for security.
+
 Main contracts:
-Collection: Handles minting, selling, and storing NFTs in collections.
-CollectionFactory: Deploys new collection contracts for users.
-Uses OpenZeppelin Contracts for security and standards compliance.
-Backend API
-Located in nft-marketplace-api/
-Node.js/Express server
-Handles:
-User authentication (JWT)
-NFT metadata storage (Postgres)
-File uploads to IPFS
-Syncing with blockchain events
-Business logic for minting, listing, buying, and transferring NFTs
-Frontend
-Located in frontend/
-Built with React and Vite
-Features:
-Wallet connection (MetaMask, WalletConnect)
-Minting UI
-NFT and collection browsing
-Listing and buying NFTs
-User dashboard
-Development Guidelines
-Follow best practices for Solidity, Node.js, and React.
-Write clear, maintainable code and document public interfaces.
-Use pull requests and code reviews for all changes.
-See OpenZeppelin Guidelines for smart contract best practices.
 
-Security
-Uses OpenZeppelin libraries for secure smart contract development.
-Backend and frontend follow standard security practices (input validation, authentication, etc.).
-Regular audits and bug bounties are recommended for production deployments.
-License
-The project uses the MIT License. See LICENSE for details.
-Acknowledgements
-OpenZeppelin for secure smart contract libraries.
-Foundry for Solidity development tooling.
-IPFS for decentralized file storage.
-For more details, see the individual READMEs in each subproject:
+* **Collection.sol** → minting, selling, storing NFTs.
+* **CollectionFactory.sol** → deploys collections per user.
 
-Smart Contracts
-Backend API
-Frontend
+---
 
+## 🛠 Backend API
+
+* Located in `nft-marketplace-api/`.
+* Built with **Node.js + Express + PostgreSQL**.
+* Responsibilities:
+
+  * Authentication (JWT).
+  * Metadata storage.
+  * File uploads → IPFS.
+  * Sync blockchain events.
+  * Mint/list/buy/transfer logic.
+
+---
+
+##  Frontend
+
+* Located in `frontend/`.
+* Built with **React + Vite + TailwindCSS**.
+* Features:
+
+  * Wallet connection (MetaMask).
+  * Minting UI.
+  * NFT/Collection browsing.
+  * User dashboard.
+  * Market page with trending/new/special collections.
+
+---
+
+##  Development Guidelines
+
+* Follow best practices (Solidity, Node.js, React).
+* Document all public interfaces.
+* Use PRs + reviews.
+* Follow [OpenZeppelin guidelines](https://docs.openzeppelin.com/).
+
+---
+
+##  Security
+
+* OpenZeppelin contracts for ERC-721, royalties.
+* Standard backend security (JWT, input validation).
+* Audit smart contracts before production.
+
+---
+
+##  Unique Selling Points
+
+* NFTs come with **clear commercial licenses**.
+* Unlockable **high-res files** only for owners.
+* **Community perks** for holders (drops, collabs, discounts).
+* **Verification tools** for provenance & ownership.
+* **Royalty enforcement** on secondary sales.
+
+Pitch:
+
+> “On our marketplace, you’re not just buying an image.
+> You’re buying **rights + provenance + unlockable utilities**.”
+
+---
+
+##  Summary
+
+The backend services must:
+
+1. **User Management**
+
+   * Register/login via wallet.
+   * JWT authentication.
+   * Profile management.
+
+2. **NFT Management**
+
+   * Mint NFTs (metadata + IPFS).
+   * List NFTs for sale.
+   * Browse/filter NFTs.
+
+3. **Buying & Transfers**
+
+   * Atomic buy process (lock → pay → transfer).
+   * Handle failures safely.
+
+4. **Transactions & History**
+
+   * Record all purchases/sales.
+   * User transaction history.
+
+5. **Blockchain Sync**
+
+   * Listen to smart contract events.
+   * Verify ownership against chain.
+
+6. **Admin Tools**
+
+   * Manage NFTs/users.
+   * Force unlist & handle fraud.
+   * Analytics (volume, sales, users).
+
+---
+
+##  License
+
+This project is licensed under the **MIT License**.
+
+---
+
+##  Acknowledgements
+
+* [OpenZeppelin](https://openzeppelin.com/) → Smart contract libraries.
+* [Foundry](https://book.getfoundry.sh/) → Solidity toolkit.
+* [IPFS](https://ipfs.tech/) → Decentralized storage.

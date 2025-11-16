@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module":"ESNext",
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "ESNext"],
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/","./"],
+  "exclude": ["node_modules"]
+}
