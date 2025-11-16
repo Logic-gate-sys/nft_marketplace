@@ -57,7 +57,7 @@ const App: React.FC = () => {
       {/* Main content */}
       <div
         id="main"
-        className="bg-[#1D1932] h-screen overflow-y-auto flex flex-col gap-5 p-2 pl-8"
+        className="bg-[#1D1932] h-screen overflow-y-auto flex flex-col gap-2 pl-2"
       >
         {/* Top bar */}
         <div

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Login from "../assets/main_background.svg";
 import Todo from "../../assets/todo.svg";
+import { CollectionsCarousel } from "../../components/ui/carousel";
 
 interface OnboardingStep {
   title: string;
@@ -9,32 +10,14 @@ interface OnboardingStep {
   description: string;
 }
 
-const onboardingSteps: OnboardingStep[] = [
-  {
-    title: "Setup Your Wallet",
-    image: Todo,
-    description:
-      "Set up your wallet of choice. Connect it to the Animarket by clicking the wallet icon in the top right corner.",
-  },
-  {
-    title: "Create Collection",
-    image: Todo,
-    description:
-      "Upload your work and setup your collection. Add a description, social links and floor price.",
-  },
-  {
-    title: "Start Earning",
-    image: Todo,
-    description:
-      "Choose between auctions and fixed-price listings. Start earning by selling your NFTs or trading others.",
-  },
-];
+
 
 const Home: React.FC = () => {
   return (
     <div id="home-page" className="flex flex-col h-full gap-5 p-3">
       {/* Hero Section */}
-      <div
+      <CollectionsCarousel collections={ collections}/>
+      {/* <div
         id="hero-container"
         className={`bg-[url('/home/logic/nft_marketplace/frontend/src/assets/main_background.svg')] bg-no-repeat bg-cover h-84 flex flex-col justify-center`}
       >
@@ -48,7 +31,7 @@ const Home: React.FC = () => {
             pro. Just sign up, connect your wallet, and start for free.
           </p>
         </div>
-      </div>
+      </div> */}
 
       <h1 className="text-3xl font-extrabold">How It Works</h1>
 
@@ -77,3 +60,53 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+
+// -------------------------- Sample Data ----------------------------
+const onboardingSteps: OnboardingStep[] = [
+  {
+    title: "Setup Your Wallet",
+    image: Todo,
+    description:
+      "Set up your wallet of choice. Connect it to the Animarket by clicking the wallet icon in the top right corner.",
+  },
+  {
+    title: "Create Collection",
+    image: Todo,
+    description:
+      "Upload your work and setup your collection. Add a description, social links and floor price.",
+  },
+  {
+    title: "Start Earning",
+    image: Todo,
+    description:
+      "Choose between auctions and fixed-price listings. Start earning by selling your NFTs or trading others.",
+  },
+];
+
+// ------------------------------- Sample Data ----------------------------------------------
+const collections = [
+  {
+    id: 1,
+    name: "Pixel Hearts",
+    cover: "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?crop=entropy&cs=tinysrgb&fit=max&w=400",
+    items: 120,
+    floorPrice: 0.5 ,
+    creator: "Alice"
+  },
+  {
+    id: 2,
+    name: "Crypto Cats",
+    cover: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?crop=entropy&cs=tinysrgb&fit=max&w=400",
+    items: 75,
+    floorPrice: 0.8 ,
+    creator: "Bob"
+  },
+  {
+    id: 3,
+    name: "3D Worlds",
+    cover: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&w=400",
+    items: 200,
+    floorPrice: 1.2 ,
+    creator: "Carol"
+  }
+];

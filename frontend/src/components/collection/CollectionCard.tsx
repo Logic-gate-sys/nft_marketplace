@@ -4,24 +4,7 @@ import { formatIpfsUrl } from "../../utils/format";
 // --------------------------- Types ----------------------------------
 
 // Metadata structure from IPFS
-interface CollectionMetadata {
-  name: string;
-  description: string;
-  image: string;
-}
 
-// Collection object from backend
-export interface Collection {
-  id: number;
-  metadata: CollectionMetadata;
-}
-
-// Props for the component
-interface CollectionListCardProps {
-  collections: Collection[];
-  selectedIndex: number;
-  onSelect: (index: number, col_id: number) => void;
-}
 
 // --------------------------- Component ----------------------------------
 const CollectionListCard: React.FC<CollectionListCardProps> = ({
