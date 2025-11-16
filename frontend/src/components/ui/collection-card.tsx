@@ -27,7 +27,7 @@ export const CollectionCard = ({
       {/* Background image */}
       <div
         className="relative w-full h-full bg-center bg-cover"
-        style={{ backgroundImage: `url(${cover}) bg-center bg-no-repeat` }}
+        style={{ backgroundImage: `url(${cover}) ` }}
       />
 
       <div className="absolute left-[2%] top-[55%] ">
