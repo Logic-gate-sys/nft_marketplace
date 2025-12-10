@@ -1,19 +1,18 @@
 import { Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import { Avatar } from "antd";
-import { Home, UploadPage, MarketPlace } from "./pages";
-import Nav from "./components/layout/Nav";
+import { Explore, Studio, MarketPlace } from "./pages";
 import avatar from './assets/avatar.svg';
-import { connectWallet } from "./ether/wallet_interactions";
-import { createUser, getUserId } from "./services/api";
-import { Popup,Loader } from "./components/effect/helperComponents";
+import { connectUserWallet } from "./utils/wallet_interactions";
+import { createUser, login } from "./services/auth";
+import { Nav, PopupMessageBox } from "./components";
+import { useAuth } from "./context/AuthContext";
 
 const App: React.FC = () => {
-  // Wallet address
-  const [address, setAddress] = useState<string>("");
+  // implement protected routes later for upload, setting and dashboard
   const [connected, setConnected] = useState<boolean>(false);
+  const { wallet, user, connectWallet } = useAuth();
   // User ID from backend
-  const [userId, setUserId] = useState<string>("");
   const message = `Wallet connection successful !, 
                    Close this button to continue `;
 
@@ -22,22 +21,25 @@ const App: React.FC = () => {
   const handleWalletConnect = async (): Promise<void> => {
     try {
       // connect walleta && retrieve signer, and walletAddress
-      const { signer, wallet } = await connectWallet();
+      const { signer, provider, wallet } = await connectUserWallet();
       if (!wallet) {
         console.log('Could not retrieve walleta address ');
         return;
       }
       //fetch user id
-      let id = await getUserId(wallet);
+      let {acessToken, user} = await login(wallet);
       //if user does not exit create one and return it's id
-      if (!id) {
-        const user = await createUser(wallet);
+      console.log("Token: ", acessToken);
+      if (acessToken.isNull) {
+        user = await createUser(wallet);
+        if (!user) {
+          console.error("Could not create new user");
+          return;
+        }
         console.log("USER RETURNED : ", user);
-        id = user.user_id;
       }
       // Set address & and user id
-      setAddress(wallet);
-      setUserId(id);
+      connectWallet(wallet, signer, provider, user, acessToken); 
       setConnected(true);
     } catch (error) {
       console.error("Wallet connection failed:", error);
@@ -49,12 +51,12 @@ const App: React.FC = () => {
       id="app-page"
       className="h-screen text-md font-sans text-white grid grid-cols-1 md:grid-cols-[0.2fr_5fr] bg-gray-800"
     >
-      {/* Sidebar */}
+      {/*----------------------------- Sidebar -------------------------------------------------*/}
       <div id="side-bar">
         <Nav />
       </div>
 
-      {/* Main content */}
+      {/*----------------------------- Main content -----------------------------------------*/}
       <div
         id="main"
         className="bg-[#1D1932] h-screen overflow-y-auto flex flex-col gap-2 pl-2"
@@ -73,7 +75,7 @@ const App: React.FC = () => {
             className="h-10 pl-1 pr-1 font-semibold rounded-xl w-max hover:bg-blue-600 active:scale-95"
             onClick={handleWalletConnect}
           >
-            {address ? `${address.slice(0, 8)}....` : "Connect Wallet"}
+            {wallet ? `${wallet.slice(0, 8)}....` : "Connect Wallet"}
           </button>
           <Avatar shape="circle" src={avatar} className="active:scale-95" />
         </div>
@@ -81,13 +83,14 @@ const App: React.FC = () => {
         {/* Routes */}
         <div id="main">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/nft-market" element={<MarketPlace />} />
-            <Route path="/upload" element={<UploadPage userId={userId} handleWallectConnect={handleWalletConnect} />} />
+            {/* <Route path="/" element={<Explore />} /> */}
+            {/* <Route path="/nft-market" element={<MarketPlace />} /> */}
+            {/* <Route path="/studio" element={<Studio userId={user?.id} handleWallectConnect={handleWalletConnect} />} /> */} 
+            {/* <Route path="/dashboard" element={<Studio userId={userId} handleWallectConnect={handleWalletConnect} />} /> */}
           </Routes>
         </div>
       </div>
-      {connected && <Popup message={message} onClose={()=>setConnected(false)}/>}
+      {connected && <PopupMessageBox message={message} onClose={()=>setConnected(false)}/>}
     </div>
   );
 };

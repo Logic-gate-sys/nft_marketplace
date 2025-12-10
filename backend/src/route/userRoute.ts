@@ -1,17 +1,16 @@
-import { createUser, getUsers, getUserByWallet } from "../controller/user";
+import { createUser, login, refreshToken} from "../controller/user";
 import express from 'express';
 const { Router } = express;
-
 const userRouter = Router();
 
 
 
 //---------------------------- post user --------------------------------------
 userRouter.post('/', createUser);
+userRouter.post('/login', login);
+userRouter.post('/token/refresh', refreshToken)
 
-//---------------- fetching users --------------------------------------------
-userRouter.get('/', getUsers);
-userRouter.get('/:wallet', getUserByWallet);
+
 
 
 

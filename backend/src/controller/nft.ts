@@ -1,5 +1,5 @@
 import { error } from "console";
-import { getPrismaClient } from "../lib/prisma";
+import { getPrismaClient } from "../../lib/prisma";
 import { Request, Response } from 'express';
 import { upload_nftMetaData_pinata, uploadImageToPinata } from "../utils/ifpfs";
 import { title } from "process";

@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
-import { connectWallet,fetchUserId } from "../../ether/wallet_interactions";
+import { connectWallet,fetchUserId } from "../../utils/wallet_interactions";
 import axios from "axios";
 
 // Type for form data
