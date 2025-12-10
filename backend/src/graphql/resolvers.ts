@@ -1,5 +1,5 @@
 import { parentPort } from "worker_threads";
-import { getPrismaClient } from "../lib/prisma";
+import { getPrismaClient } from "../../lib/prisma";
 
 
 

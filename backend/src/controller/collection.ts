@@ -1,4 +1,4 @@
-import { getPrismaClient } from "../lib/prisma";
+import { getPrismaClient } from "../../lib/prisma";
 import { Request, Response } from "express";
 import { uploadImageToPinata, uploadCollectionMetaData } from '../utils/ifpfs';
 
