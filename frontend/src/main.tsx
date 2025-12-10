@@ -5,6 +5,7 @@ import App from './App';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { ApolloClient,HttpLink, InMemoryCache } from '@apollo/client';
 import { ApolloProvider } from '@apollo/client/react';
+import { AuthProvider } from './context/AuthContext';
 
 
 // setup apollo client 
@@ -23,7 +24,9 @@ root.render(
   <StrictMode>
     <ApolloProvider client={client}>
       <Router>
-      <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
      </Router>
     </ApolloProvider>
     
