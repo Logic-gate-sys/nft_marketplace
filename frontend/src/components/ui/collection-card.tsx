@@ -23,11 +23,11 @@ export const CollectionCard = ({
   creator,
 }: CollectionProp) => {
   return (
-    <div className="rounded-[18px] shadow-md overflow-hidden w-full h-[28rem] flex flex-col">
+    <div className=" rounded-[18px] shadow-md overflow-hidden w-full h-[28rem] flex flex-col">
       {/* Background image */}
       <div
-        className="relative w-full h-full bg-center bg-cover"
-        style={{ backgroundImage: `url(${cover}) ` }}
+        className="w-full h-full bg-center bg-cover"
+        style={{ backgroundImage: `url(${cover})` }}
       />
 
       <div className="absolute left-[2%] top-[55%] ">

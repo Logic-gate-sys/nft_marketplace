@@ -1,23 +1,23 @@
 import NFTCard from "../ui/ntf-card";
-import { CollectionCard } from "../ui/collection-card";
+
 import NFTDetail from "../ui/nft-detail-card";
 import CollectionDetailCard from "../ui/collection-detail";
 import { formatIpfsUrl } from "../../utils/format";
 import { ChangeEvent, useState } from "react";
-import { MintForm } from "../form/MintForm";
+import { MintForm } from "../forms/MintForm";
 import {
   cakeNFTAbi,
   MARKET_PLACE_ADDRESS,
   CAKE_ADDRESS,
   marketPlaceAbi,
 } from "../../../../shared/constants/contract-constants";
-import { connectWallet } from "../../ether/wallet_interactions";
+import { connectWallet } from "../../utils/wallet_interactions";
 import {
   getWriteContractInstance,
   approveMarketPlace,
   listNFT,
 } from "../../ether/contract_interaction";
-import { Spinner } from "../effect/helperComponents";
+import { Spinner } from "../effects/helperComponents";
 import { getListedLogs } from "../../services/nft-indexing";
 
 export default function CollectionsPage({ collection }: any) {

@@ -1,16 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES2023",
     "module": "ESNext",
     "moduleResolution": "node",
-    "esModuleInterop": true,
+    "target": "ES2023",
     "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "lib": ["es2023"]
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+    "esModuleInterop": true,
+    "ignoreDeprecations": "6.0"
+  }
 }
