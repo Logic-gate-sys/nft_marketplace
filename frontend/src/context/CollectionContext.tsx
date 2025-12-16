@@ -1,5 +1,4 @@
-import { Provider, Signer } from 'ethers';
-import React, { useContext, createContext, useState } from 'react';
+import { useContext, createContext, useState } from 'react';
 
 interface AuthContextType{
     user: any;

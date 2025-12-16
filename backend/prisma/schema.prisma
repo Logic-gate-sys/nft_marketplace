@@ -7,6 +7,9 @@ datasource db {
   provider = "postgresql"
 }
 
+
+// --------------------- SCHEMA -----------------------------------------
+
 model Collection {
   col_uri   String
   create_at DateTime   @default(now())
@@ -28,10 +31,9 @@ model Listings {
 }
 
 model Nft {
+  id         Int   @unique    @id @default(autoincrement())
   col_id     Int
-  nft_uri    String?
-  name       String
-  id         Int        @id @default(autoincrement())
+  uri    String?
   token_id   Int
   owner_id   Int
   Collection Collection @relation(fields: [col_id], references: [id])
