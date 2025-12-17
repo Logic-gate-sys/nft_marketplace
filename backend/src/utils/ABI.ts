@@ -1,5 +1,7 @@
 
 import { TTLCache } from '@isaacs/ttlcache';
+const etherscan_base_url = process.env.ETHERSCAN_BASE_URL;
+const ethescan_api_key = process.env.ETHERSCAN_API_KEY
 
 const cache = new TTLCache({
     max: 50, // 12 hourse TTL
@@ -41,34 +43,35 @@ export const getABI_from_ttl_cache = (address: string) =>{
  * @remarks
  * A countract that's not deployed on the local, we need to fetch it's abi from etherscan
  * This function fetches the verified contract ABI from Etherscan
- * @param address - The Ethereum contract address
+ * @param address - The Ethereum contract address (currently sepolia testnet)
  * @returns Parsed ABI (array of JSON objects)
  */
-export const fetchAbiFromEtherscan = async (address: string) => {
+export const fetchAbiFromEtherscan = async (address: string, chainId: number =11155111) => {
     if (ABIexists(address)) {
         const ABI = getABI_from_ttl_cache(address);
         return ABI;
     }
     else {
-        const etherscan_base_url = process.env.ETHERSCAN_BASE_URL;
-        const ethescan_api_key = process.env.EHTERSCAN_API_KEY
-  try {
-        const url = `${etherscan_base_url}?module=contract&action=getabi&address=${address}&apikey=${ethescan_api_key}`;
-    const res = await fetch(url);
+      try {
+    
+        const url = `${etherscan_base_url}?&apikey=${ethescan_api_key}&chainid=${chainId}&module=contract&action=getabi&address=${address}`;
+        const res = await fetch(url);
 
     if (!res.ok) {
-      throw new Error(`Etherscan error: ${res.status}`);
+      console.log(`Etherscan error: ${res.status}`);
+      return;
     }
     const  json  = await res.json(); // ABI as JS object
     if (json.status !== '1') {
-      throw new Error("Etherscan fetch failed");
+      console.log(`Etherscan NOTOK: ${json.result}`);
+      return;
     }
       // set in cache
-      const abi = JSON.parse(json.result);
-      setABI(address, abi);
+      const ABI = JSON.parse(json.result);
+      setABI(address, ABI);
 
       // return abi
-      return abi;
+      return ABI;
      
   } catch (err: any) {
     throw new Error(`Failed to fetch ABI: ${err.message}`);

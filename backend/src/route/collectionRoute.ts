@@ -20,7 +20,8 @@ collectionRouter.get('/', fetchAllCollections);
 collectionRouter.get('/:col_id', fetchCollectionById);
 // 
 collectionRouter.get('/usercollection/user', Authenticate, fetchUserCollections)
-collectionRouter.get('/abi/:col_id', Authenticate, fetchCollectionABI);
+// Collection ABI
+collectionRouter.get('/collection/abi', Authenticate, fetchCollectionABI);
 
 
 export default collectionRouter;
