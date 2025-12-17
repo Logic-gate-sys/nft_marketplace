@@ -10,4 +10,6 @@ export const createCollection = async (data: FormData) => {
     // returned json
     const new_collection = await fetch_result.json();
     return new_collection;
- }
+}
+ 
+

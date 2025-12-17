@@ -1,8 +1,7 @@
 import { ethers, Signer, Provider, Signature } from "ethers";
 import axios from "axios";
 const ETHERSCAN_API_KEY = import.meta.env.VITE_ETHERSCAN_API_KEY;
-const ETHERSCAN_BASE_URL = "https://api.etherscan.io/api";
-
+const BASE_URL = import.meta.env.BASE_URL;
 /*
 --------------- MODE OF INTERACTIONS ---------------- :
 1. login with wallet address via metamusk should only allow users to view their collections :
@@ -39,6 +38,54 @@ export const getWriteContractInstance = async (
     throw new Error(err);
   }
 };
+
+/**
+ * 
+ * @param contractAddress   try { 
+  const { col_id, contractAddress } = req.query;
+  const user_id = req.user?.userId;
+  if (!col_id || !user_id || !contractAddress) {
+    return res.status(400).json({
+      success: false,
+      message: "User id or contract address or collection address is not provided",
+      error: "Bad request body"
+    })
+  }
+  // getting all the necessary abi 
+    const ABI = await fetchAbiFromEtherscan(contractAddress);
+    if (ABI.length == 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No ABI found from ethersan'
+      });
+    }
+ // Student 
+    return res.status(200).json({
+      success: true,
+      data: ABI,
+      message: "ABI returned  success
+ * @param token 
+ */
+
+export const fetchContractABI = async (contractAddress: string, token: string) => {
+  const res = await fetch(`${BASE_URL}/collections/collection/abi?contractAddress=${contractAddress}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+  
+  if (!res.ok) {
+    console.log("Could not retrieve ABI");
+    return;
+  }
+  // get abi 
+  const { data } = await res.json();
+
+  return data;
+}
 
 
 /**

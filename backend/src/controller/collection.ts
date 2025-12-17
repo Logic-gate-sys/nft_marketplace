@@ -453,11 +453,17 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
 };
 
 // fech collction abi 
+/**
+ * 
+ * @param req ; request object that the user has been attached to after authentication
+ * @param res  result that is returned after request executes successfully
+ * @returns 
+ */
 export const fetchCollectionABI = async (req: any, res: Response) => {
   try { 
-  const { col_id, contractAddress } = req.query;
+  const { contractAddress } = req.query;
   const user_id = req.user?.userId;
-  if (!col_id || !user_id || !contractAddress) {
+  if ( !user_id || !contractAddress) {
     return res.status(400).json({
       success: false,
       message: "User id or contract address or collection address is not provided",
@@ -466,8 +472,11 @@ export const fetchCollectionABI = async (req: any, res: Response) => {
   }
   // getting all the necessary abi 
     const ABI = await fetchAbiFromEtherscan(contractAddress);
-    if (ABI.length == 0) {
-      return res.status(404).json({ success: false, message: 'No ABI found from ethersan' });
+    if (!ABI) {
+      return res.status(404).json({
+        success: false,
+        message: 'No ABI found from ethersan'
+      });
     }
  // Student 
     return res.status(200).json({
@@ -475,7 +484,8 @@ export const fetchCollectionABI = async (req: any, res: Response) => {
       data: ABI,
       message: "ABI returned  successfully"
     });
-}catch (e: any) {
+  } catch (e: any) {
+    console.log(e);
   console.log(e.message);
   return;
 }

@@ -8,6 +8,7 @@ import {
 import { getTransferLogs, getTokenURI } from "../../services/nft-indexing";
 import { Loader, Spinner, PopupMessageBox } from "../index";
 import { useAuth } from "../../context/AuthContext";
+import { fetchContractABI } from "../../ether/contract_interaction";
 
 interface MintFormProps {
   col_id: string;
@@ -34,7 +35,7 @@ export const MintForm = ({ col_id, col_address, col_owner, type }: MintFormProps
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
 
-  const { signer, provider } = useAuth();
+  const { signer, provider, token } = useAuth();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -57,7 +58,10 @@ export const MintForm = ({ col_id, col_address, col_owner, type }: MintFormProps
     setLoading(true);
 
     try {
-     const NFT_contractABI = await fetchAbiFromEtherscan(col_address);
+      if (!token) {
+        return;
+     }
+    const NFT_contractABI = await fetchContractABI(col_address, token);
     if (!provider || !signer) {
         setError(true);
         setMessage("Connect wallet first , dummy !");
