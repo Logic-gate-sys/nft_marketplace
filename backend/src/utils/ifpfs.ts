@@ -59,6 +59,7 @@ export const upload_nft_metadata = async (
 // ------------------------ upload collection metadat
 
 export const uploadCollectionMetaData = async (
+  type: string ,
   contractAddress: string,
   name: string,
   description: string,
@@ -70,6 +71,7 @@ export const uploadCollectionMetaData = async (
 ) => {
   //metadata <--- following opensea's standard for metadata
   const metadata = {
+    type: type,
     contractAddress: contractAddress,
     name: name,
     description: description,

@@ -31,15 +31,14 @@ export const fetchCollectionById = async (col_id: number) => {
   const json = await res.json();
 
   return {
-    collection: json.data as FetchedCollection,
-    pagination: json.pagination as Pagination
+    collection: json.data as FetchedCollection
   };
 }
 
 
 // fetch User specification collection 
-export const fetchUserCollection = async (token: any, user_id: number) => {
-  const res = await fetch(`${BASE_URL}/collections/${user_id}`,
+export const fetchUserCollection = async (token: any) => {
+  const res = await fetch(`${BASE_URL}/collections/usercollection/user`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -53,9 +52,10 @@ export const fetchUserCollection = async (token: any, user_id: number) => {
   }
 
   const json = await res.json();
+  console.log("JSON: ", json);
 
   return {
-    collection: json.data as FetchedCollection[],
+    collections: json.data as FetchedCollection[],
     pagination: json.pagination as Pagination
   };
 }

@@ -25,7 +25,7 @@ const ETHERSCAN_BASE_URL = "https://api.etherscan.io/api";
 export const getWriteContractInstance = async (
   address: string,
   abi: any,
-  signer: Provider
+  signer: Signer
 ) => {
   try {
     //contract instance
@@ -73,7 +73,7 @@ export const getCollectionInstanceFromFactory = async (
 export const getReadOnlyContractInstance = async (
   address: string,
   abi: any,
-  provider: Signer
+  provider: Provider
 ) => {
   const readableContract = new ethers.Contract(address, abi, provider);
   if (!readableContract) {
@@ -85,27 +85,6 @@ export const getReadOnlyContractInstance = async (
 };
 
 
-
-/**
- * @remarks
- * A countract that's not deployed on the local, we need to fetch it's abi from etherscan
- * This function fetches the verified contract ABI from Etherscan
- * @param address - The Ethereum contract address
- * @returns Parsed ABI (array of JSON objects)
- */
-export async function fetchAbiFromEtherscan(address: string): Promise<any[]> {
-  try {
-    const url = `${ETHERSCAN_BASE_URL}?module=contract&action=getabi&address=${address}&apikey=${ETHERSCAN_API_KEY}`;
-    const response = await axios.get(url);
-
-    if (response.data.status !== "1") {
-      throw new Error(`Etherscan error: ${response.data.result}`);
-    }
-    return JSON.parse(response.data.result); // ABI as JS object
-  } catch (err: any) {
-    throw new Error(`Failed to fetch ABI: ${err.message}`);
-  }
-}
 
 
 // /**

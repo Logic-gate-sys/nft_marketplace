@@ -13,7 +13,7 @@ import {
   PopupMessageBox,
 } from "../../components";
 import type { Tab } from "../../components/sections/TabNavigation";
-import { fetchAllCollections } from "../../utils/fetchCollections";
+import { fetchUserCollection } from "../../utils/fetchCollections";
 import { useAuth } from "../../context/AuthContext";
 
 const Studio: React.FC = () => {
@@ -26,7 +26,7 @@ const Studio: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const navigate = useNavigate();
-  const { user, token, wallet } = useAuth();
+  const { user, token, wallet} = useAuth();
 
   // Fetch user's collections
   useEffect(() => {
@@ -34,6 +34,7 @@ const Studio: React.FC = () => {
       setError("Error , Please connect your wallet");
       return;
     }
+    console.log("WALLET: ", wallet);
     setLoading(true);
     const loadCollections = async () => {
       // Only fetch if user is authenticated
@@ -47,16 +48,15 @@ const Studio: React.FC = () => {
         setError(null);
 
         //
-        const { collections, pagination } = await fetchAllCollections();
+        const { collections, pagination } = await fetchUserCollection(token);
 
         if (!collections) {
           setError("No collections found");
           return;
         }
-
-        const userCollection = collections.filter((col) => col.creator === wallet?.toLowerCase()) ??[];
-        setCollections(userCollection);
-        console.log("Loaded collections:", userCollection.length);
+        //update collection state
+        setCollections(collections);
+        console.log("Loaded collections:", collections.length);
         setLoading(false)
       } catch (err: any) {
         console.error("Error loading collections:", err);
@@ -69,6 +69,7 @@ const Studio: React.FC = () => {
     loadCollections();
   }, [user, token]);
 
+  // Navigation Tabs on the Studio page
   const tabs: Tab[] = [
     { id: "collections", label: "Collections", count: collections.length },
     { id: "nfts", label: "NFTs", count: 0 },

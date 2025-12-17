@@ -54,18 +54,14 @@ export interface CollectionCardProps{
 }
 
 export interface NFTCardProps {
-  id: string | number;
   tokenId: number | string;
-  name: string;
   image?: string | null;
-  collection?: string;
+  contractAddress?: string;
   price?: number | string | null;
   lastPrice?: number | string | null;
-  endTime?: string | Date;
   isListed?: boolean;
   context?: 'studio' | 'marketplace';
   onClick?: () => void;
-  onFavorite?: () => void;
   onBuy?: () => void;
   onList?: () => void;
   onUnlist?: () => void;
@@ -111,6 +107,7 @@ export interface CreateCollectionFormProps {
 
 export interface FetchedCollection {
   id: string;
+  type: string; 
   name: string;
   cover: string;
   logo: string;

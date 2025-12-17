@@ -10,6 +10,7 @@ import collectionRouter from './route/collectionRoute';
 const app: Application = express();
 app.use(
   cors({
+    
     origin: "http://127.0.0.1:5173",   // your Vite 
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,

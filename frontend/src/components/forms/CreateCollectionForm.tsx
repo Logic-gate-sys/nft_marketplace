@@ -123,7 +123,7 @@ const CreateCollectionForm: React.FC<CreateCollectionFormProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handle_offchain_submit = async (e: React.FormEvent) => {
+  const handle_collection_creation = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Check if user is authenticated
@@ -298,7 +298,7 @@ const CreateCollectionForm: React.FC<CreateCollectionFormProps> = ({
           )}
 
           {/* Form - Scrollable */}
-          <form onSubmit={handle_offchain_submit} className="flex-1 overflow-y-auto">
+          <form onSubmit={handle_collection_creation} className="flex-1 overflow-y-auto">
             <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Collection Type Selector */}
               <div>
