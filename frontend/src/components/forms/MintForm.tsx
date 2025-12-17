@@ -1,42 +1,32 @@
 import { useState, ChangeEvent, FormEvent } from "react";
-import { getWriteContractInstance, getReadOnlyContractInstance, mintOnChain, mintOffChain } from "../../ether/contract_interaction";
+import {
+  getWriteContractInstance,
+  getReadOnlyContractInstance,
+  mintOnChain,
+  mintOffChain,
+} from "../../ether/contract_interaction";
 import { getTransferLogs, getTokenURI } from "../../services/nft-indexing";
 import { Loader, Spinner, PopupMessageBox } from "../index";
 import { useAuth } from "../../context/AuthContext";
 
 interface MintFormProps {
   col_id: string;
-  col_name: string;
   col_address: string;
   col_owner: string;
-  type: "On-Chain" | "Off-Chain";
-  setWantsToMint: (v: boolean) => void;
+  type: string;
 }
 
-// NFT metadata
-interface NFTFormState {
-  id: number;
-  attributes: {
-    rarity: string;
-    occasion: string;
-    redeemable: boolean;
-    type: string;
-    background: string;
-  };
-  image: File | null;
-}
-
-export const MintForm = ({ col_id, col_address, col_owner, type, setWantsToMint }: MintFormProps) => {
-  const [formData, setFormData] = useState<NFTFormState>({
-    id: 0,
+export const MintForm = ({ col_id, col_address, col_owner, type }: MintFormProps) => {
+  const [formData, setFormData] = useState<any>({
+    id: 0, // collection id
+    image: null,
     attributes: {
       rarity: "Common",
       occasion: "Birthday",
       redeemable: true,
-      type: "Digital",
-      background: "Galaxy",
-    },
-    image: null,
+      type: "",
+      background: "cyan",
+    }
   });
 
   const [loading, setLoading] = useState(false);
@@ -67,14 +57,23 @@ export const MintForm = ({ col_id, col_address, col_owner, type, setWantsToMint 
     setLoading(true);
 
     try {
+     const NFT_contractABI = await fetchAbiFromEtherscan(col_address);
+    if (!provider || !signer) {
+        setError(true);
+        setMessage("Connect wallet first , dummy !");
+        return;
+      }
       const payload = new FormData();
       payload.append("attributes", JSON.stringify(formData.attributes));
       if (formData.image) payload.append("file", formData.image);
 
       payload.append("colId", col_id);
       payload.append("ownerId", col_owner);
-
-      const readContract = await getReadOnlyContractInstance(col_address, workHorseAbi, provider);
+     
+      const readContract = await getReadOnlyContractInstance(col_address, NFT_contractABI, provider);
+      if (!readContract) {
+        return;
+      }
       const nextId = await readContract.getNextTokenId();
       payload.append("tokenId", nextId.toString());
 
@@ -82,12 +81,11 @@ export const MintForm = ({ col_id, col_address, col_owner, type, setWantsToMint 
         { method: "POST", body: payload });
       const { nft_uri } = await res.json();
 
-      const writeContract = await getWriteContractInstance(col_address, workHorseAbi, signer);
+      const writeContract = await getWriteContractInstance(col_address, NFT_contractABI, signer);
       await mintOffChain(writeContract, nft_uri);
 
       setMessage("NFT minted successfully!");
       setSuccess(true);
-      setWantsToMint(false);
     } catch (err: any) {
       console.log(err);
       setError(true);
@@ -98,10 +96,6 @@ export const MintForm = ({ col_id, col_address, col_owner, type, setWantsToMint 
 
   return (
     <main className="fixed opacity-99 z-50 inset-[15%] bg-[#1e1e2f] rounded-xl p-6 w-[600px] flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-blue-400">
-        Mint NFT in <span className="text-orange-400">{col_name}</span>
-      </h1>
-
       {type === "Off-Chain" && (
         <form onSubmit={handleOffChainMint} encType="multipart/form-data" className="flex flex-col gap-4">
           {/* Rarity */}

@@ -1,12 +1,14 @@
 import { prisma } from './../lib/prisma';
 import { Request, Response } from 'express';
 import { uploadImageToPinata, uploadCollectionMetaData } from '../utils/ifpfs';
+import { fetchAbiFromEtherscan } from '@/utils/ABI';
 import {
   ipfsCIDToHttp,
   ipfsToHttp,
   fetchIpfsMetadata,
   formatCollectionMetadata,
 } from '../utils/ifpfs';
+import { JsonWebTokenError } from 'jsonwebtoken';
 
 // coverImage: null,
 // logoImage: null,
@@ -19,6 +21,7 @@ export const create_offchain_collection = async (
   // get fields require to create collection
   const {
     owner_id,
+    type,
     contractAddress,
     name,
     description,
@@ -65,6 +68,7 @@ export const create_offchain_collection = async (
   //upload collection data to ipfs
 
   const col_uri = await uploadCollectionMetaData(
+    type,
     contractAddress,
     name,
     description,
@@ -228,8 +232,8 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
 
 export const fetchUserCollections = async (req: any, res: Response) => {
   try {
-    const userId = req.user?.id;
-    const requestedUserId = parseInt(req.params.userId);
+    const userId = req.user?.userId; //passed from the auth middleware
+    const { skip =0, take=10 } = req.query;
 
     // Validate authentication
     if (!userId) {
@@ -240,40 +244,14 @@ export const fetchUserCollections = async (req: any, res: Response) => {
       });
     }
 
-    // Check if user is requesting their own collections
-    if (userId !== requestedUserId) {
-      return res.status(403).json({
-        success: false,
-        error: 'Forbidden',
-        message: 'You can only access your own collections',
-      });
-    }
-
     // Optional query parameters
-    const { sortBy = 'recent', category } = req.query;
+    const { sortBy = 'recent'} = req.query;
 
-    // Build where clause
-    const whereClause: any = {
-      user_id: userId,
-    };
 
-    if (category && category !== 'all') {
-      whereClause.col_uri = {
-        contains: `"category":"${category}"`,
-      };
-    }
 
-    // Build orderBy clause
-    let orderBy: any = { create_at: 'desc' };
-
-    if (sortBy === 'oldest') {
-      orderBy = { create_at: 'asc' };
-    } else if (sortBy === 'name') {
-      // Will sort by name after fetching
-    }
-
-   const collections = await prisma.collection.findMany({
-      where: whereClause,
+    const collections = await prisma.collection.findMany({
+     // match only the collections that corresponds to user id
+      where: { user_id: userId },
       include: {
         _count: { select: { Nft: true, Listings: true } },
         User: { select: { id: true, username: true, wallet: true } },
@@ -286,25 +264,37 @@ export const fetchUserCollections = async (req: any, res: Response) => {
                 wallet: true,
               },
             },
-          },
-        }, // include NFT owner info
+          }
+        }
       },
-      orderBy: orderBy,
+      // pagination 
+      skip: skip,
+      take: take,
+
+      // oder the return data to prevent inconsistency
+      orderBy: {
+        create_at: "asc"
+      }
     });
 
-    // Total count
+    // Total count of Collections belong to user 
     const totalCollections = await prisma.collection.count({
-      where: whereClause,
+      where: {
+        user_id: userId
+      },
     });
 
-    // Transform collections
+    /**
+     * This replaces all cid with http urls
+     * future functionalities would fetch and refine nfts with their metadata appropriately
+     * 
+     */
     const transformedCollections = await Promise.all(
       collections.map(async (col) => {
         // Fetch collection metadata
         const meta = await fetchIpfsMetadata(col.col_uri);
-
         // Transform NFTs in this collection
-        const transformedNfts = col.Nft.map((nft) => ({
+        const transformedNfts = col.Nft?.map((nft) => ({
           id: nft.id,
           tokenId: nft.token_id,
           uri: nft.uri ?? '',
@@ -340,11 +330,11 @@ export const fetchUserCollections = async (req: any, res: Response) => {
       transformedCollections.sort((a, b) => b.items - a.items);
     }
     // Pagination metadata
-    res.json({
+    return res.json({
       success: true,
       data: transformedCollections,
       pagination: {
-        total: totalCollections,
+        total: totalCollections
       },
     });
   } catch (error: any) {
@@ -364,7 +354,7 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
   try {
     const collectionId = parseInt(req.params.col_id);
 
-    if (isNaN(collectionId)) {
+    if (!collectionId) {
       return res.status(400).json({
         success: false,
         error: 'Invalid ID',
@@ -411,7 +401,7 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
     }
 
     // Fetch IPFS metadata
-    const meta = await fetchIpfsMetadata(collection.col_uri).catch(() => null);
+    const meta = await fetchIpfsMetadata(collection.col_uri);
 
     // Transform NFTs
     const transformedNfts = collection.Nft.map((nft) => ({
@@ -426,6 +416,7 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
 
     const transformedCollection = {
       id: collection.id.toString(),
+      type:meta?.type,
       name: meta?.name ?? 'Unnamed Collection',
       cover: meta?.cover ? ipfsCIDToHttp(meta.cover) : '',
       logo: meta?.logo ? ipfsCIDToHttp(meta.logo) : '',
@@ -447,7 +438,7 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
       createdAt: collection.create_at,
     };
 
-    res.json({
+    return res.json({
       success: true,
       data: transformedCollection,
     });
@@ -461,12 +452,31 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
   }
 };
 
-// Helper function
-function parseCollectionUri(uri: string | null): any {
-  if (!uri) return {};
-  try {
-    return JSON.parse(uri);
-  } catch {
-    return {};
+// fech collction abi 
+export const fetchCollectionABI = async (req: any, res: Response) => {
+  try { 
+  const { col_id, contractAddress } = req.query;
+  const user_id = req.user?.userId;
+  if (!col_id || !user_id || !contractAddress) {
+    return res.status(400).json({
+      success: false,
+      message: "User id or contract address or collection address is not provided",
+      error: "Bad request body"
+    })
   }
+  // getting all the necessary abi 
+    const ABI = await fetchAbiFromEtherscan(contractAddress);
+    if (ABI.length == 0) {
+      return res.status(404).json({ success: false, message: 'No ABI found from ethersan' });
+    }
+ // Student 
+    return res.status(200).json({
+      success: true,
+      data: ABI,
+      message: "ABI returned  successfully"
+    });
+}catch (e: any) {
+  console.log(e.message);
+  return;
+}
 }

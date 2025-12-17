@@ -1,6 +1,6 @@
 import express from 'express';
 const { Router } = express;
-import { create_offchain_collection, fetchAllCollections, fetchCollectionById, fetchUserCollections } from '../controller/collection'
+import { create_offchain_collection, fetchAllCollections, fetchCollectionABI, fetchCollectionById, fetchUserCollections } from '../controller/collection'
 import { Authenticate } from '@/middlewares/Auth';
 
 import multer from 'multer';
@@ -19,8 +19,8 @@ collectionRouter.post('/create', Authenticate, upload.array('files', 2), create_
 collectionRouter.get('/', fetchAllCollections);
 collectionRouter.get('/:col_id', fetchCollectionById);
 // 
-collectionRouter.get('/usercollection', Authenticate, fetchUserCollections)
-
+collectionRouter.get('/usercollection/user', Authenticate, fetchUserCollections)
+collectionRouter.get('/abi/:col_id', Authenticate, fetchCollectionABI);
 
 
 export default collectionRouter;

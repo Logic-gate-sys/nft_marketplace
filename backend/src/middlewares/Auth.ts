@@ -13,11 +13,14 @@ export const Authenticate = async (req: any, res: Response, next: NextFunction) 
     }
 
     const token = auth.split(" ")[1];
-    const decoded = verifyToken(token); // verifyToken should throw on failure
+    const {userId, wallet} = verifyToken(token); // verifyToken should throw on failure
 
-    req.user = decoded;
+    req.user = {userId, wallet};
     next();
   } catch (err) {
-    return res.status(401).json({ success: false, message: "Invalid or expired token" });
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token"
+    });
   }
 };

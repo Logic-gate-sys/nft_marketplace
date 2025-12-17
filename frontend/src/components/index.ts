@@ -14,3 +14,4 @@ export { default as EmptyState } from './sections/EmptyState';
 export { default as FilterBar } from './sections/FilterBar';
 export { default as StatsBar } from './sections/StatsBar';
 export { default as CreateCollectionForm } from './forms/CreateCollectionForm';
+export { MintForm } from './forms/MintForm'

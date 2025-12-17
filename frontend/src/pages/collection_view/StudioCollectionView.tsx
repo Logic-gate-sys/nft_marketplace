@@ -1,21 +1,26 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, UNSAFE_getTurboStreamSingleFetchDataStrategy } from 'react-router-dom';
 import { 
   NFTCard, 
   CardGrid,
   TabNavigation,
   EmptyState,
+  MintForm
 } from '../../components';
 import type { Tab } from '../../components/sections/TabNavigation';
 import { FetchedCollection } from '../../services/types';
 import { fetchCollectionById } from '../../utils/fetchCollections';
-
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+
+
+
 const StudioCollectionView: React.FC = () => {
+  //dynamic collection url id
   const { col_id } = useParams<{ col_id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+ 
   
   const [activeTab, setActiveTab] = useState<string>('items');
   const [filterStatus, setFilterStatus] = useState<'all' | 'listed' | 'unlisted'>('all');
@@ -23,6 +28,7 @@ const StudioCollectionView: React.FC = () => {
   const [collection, setCollection] = useState<FetchedCollection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [wantsToMint, setWantToMint] = useState( false);
 
   // Determine context from route
   const isStudioContext = location.pathname.includes('/studio/collection');
@@ -39,8 +45,17 @@ const StudioCollectionView: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-
-        const {collection, pagination} = await fetchCollectionById(Number(col_id));
+        if (!col_id) {
+          return;
+        }
+        const coll_id = Number(col_id);
+        if (!coll_id || Number.isNaN(coll_id)) {
+          setLoading(false);
+          setError("Collection id is not defined !");
+          return;
+        }
+        console.log("COLLECTION ID ", coll_id)
+        const {collection} = await fetchCollectionById(coll_id);
         
         if (!collection) {
           throw new Error( 'Collection not found, Failed to fetch collection');
@@ -109,10 +124,6 @@ const StudioCollectionView: React.FC = () => {
     { id: 'activity', label: 'Activity' },
   ], [filteredNFTs.length]);
 
-  // Event handlers
-  const handleMintNFT = () => {
-    navigate(`/studio/collection/${col_id}/mint`);
-  };
 
   const handleNFTClick = (nftId: number) => {
     navigate(`/nft/${nftId}`);
@@ -225,21 +236,9 @@ const StudioCollectionView: React.FC = () => {
               <div className="flex gap-2 mb-2">
                 <button 
                   className="btn-primary"
-                  onClick={handleMintNFT}
+                  onClick={()=> setWantToMint(true)}
                 >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Mint NFT
-                </button>
-                <button 
-                  className="btn-secondary"
-                  onClick={() => navigate(`/studio/collection/${col_id}/edit`)}
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Edit
+                  {collection.type}
                 </button>
               </div>
             )}
@@ -323,7 +322,7 @@ const StudioCollectionView: React.FC = () => {
                 {isStudioContext && (
                   <button 
                     className="btn-primary"
-                    onClick={handleMintNFT}
+                    onClick={()=> setWantToMint(true)}
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -375,7 +374,7 @@ const StudioCollectionView: React.FC = () => {
                 }
                 action={
                   isStudioContext ? (
-                    <button className="btn-primary" onClick={handleMintNFT}>
+                    <button className="btn-primary" onClick={()=>setWantToMint}>
                       <svg className="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
@@ -425,8 +424,8 @@ const StudioCollectionView: React.FC = () => {
           />
         )}
       </div>
+      {wantsToMint && <MintForm type={collection.type}  col_id={collection.id} col_address={collection.contractAddress} col_owner={collection.creator} />}
     </div>
   );
 };
-
 export default StudioCollectionView;
