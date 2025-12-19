@@ -1,25 +1,44 @@
 import React from 'react';
 import { NFTCardProps } from '../../services/types';
 
+
+/**
+ * 
+export interface NFTCardProps {
+  id:number,
+  tokenId: number | string;
+  image?: string | null;
+  contractAddress?: string;
+  price?: number | string | null;
+  lastPrice?: number | string | null;
+  isListed?: boolean;
+  context?: 'studio' | 'marketplace';
+  onClick?: () => void;
+  onBuy?: () => void;
+  onList?: () => void;
+  onUnlist?: () => void;
+  isFavorited?: boolean;
+  loading?: boolean;
+}
+
+ */
+
 const NFTCard: React.FC<NFTCardProps> = ({
   id,
   tokenId,
-  name,
   image,
-  collection,
   price,
   lastPrice,
-  endTime,
   isListed = false,
   context = 'marketplace',
+  col_name,
   onClick,
-  onFavorite,
   onBuy,
   onList,
   onUnlist,
-  isFavorited = false,
   loading = false,
 }) => {
+
   if (loading) {
     return (
       <div className="card w-full">
@@ -42,7 +61,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
         {image ? (
           <img
             src={image}
-            alt={name}
+            alt={col_name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
@@ -53,33 +72,6 @@ const NFTCard: React.FC<NFTCardProps> = ({
             </svg>
           </div>
         )}
-
-        {/* Favorite button */}
-        {onFavorite && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onFavorite();
-            }}
-            className="absolute top-2 right-2 p-1.5 rounded-full bg-os-bg-secondary/90 backdrop-blur-sm hover:bg-os-bg-elevated transition-colors opacity-0 group-hover:opacity-100"
-            aria-label="Favorite"
-          >
-            <svg
-              className={`w-4 h-4 ${isFavorited ? 'fill-os-red text-os-red' : 'text-os-text-secondary'}`}
-              fill={isFavorited ? 'currentColor' : 'none'}
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </button>
-        )}
-
         {/* Status Badge */}
         {context === 'studio' && isListed && (
           <div className="absolute top-2 left-2">
@@ -88,30 +80,15 @@ const NFTCard: React.FC<NFTCardProps> = ({
             </span>
           </div>
         )}
-
-        {/* Auction timer */}
-        {endTime && (
-          <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-black/70 backdrop-blur-sm text-white text-[10px] font-semibold">
-            <svg className="w-2.5 h-2.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            2h 15m
-          </div>
-        )}
       </div>
 
       {/* Body - Compact OpenSea style */}
       <div className="p-2.5">
         {/* Collection name */}
-        {collection && (
-          <p className="text-[11px] text-os-text-tertiary mb-0.5 truncate font-medium">
-            {collection}
-          </p>
-        )}
 
         {/* NFT name */}
         <h3 className="text-os-text-primary font-semibold text-[13px] mb-2 truncate leading-tight">
-          {name || `#${tokenId}`}
+          {col_name +` #${tokenId}`}
         </h3>
 
         {/* Price section */}
