@@ -1,18 +1,12 @@
-import { getPrismaClient } from '../lib/prisma';
-import { Request,Response } from 'express';
 
-//prisma-client instance 
-const prisma = getPrismaClient();  
+import { Request, Response } from 'express';
+import { prisma } from './../lib/prisma';
+import { signAcessToken, signRefreshToken, verifyToken } from '../utils/auth';
 
-interface Request_Body{
-    username: string,
-    wallet: string,
-    email: string
-}
 
-//------------------------ create User ----------------------------------
+// create User
 export async function createUser(req:Request, res:Response) {
-    const { username, wallet, email }: Request_Body = req.body;
+    const { wallet } = req.body;
   // Check that the wallet exists
   if (!wallet) {
     return res.json({ message: "No wallet provided by user" });
@@ -20,53 +14,110 @@ export async function createUser(req:Request, res:Response) {
 
   try {
     // Create user with Prisma Client, conditionally include optional fields
+    const alreadyExist = await prisma.user.findUnique({
+      where: { wallet: wallet }
+    }) ? true : false;
+    if (alreadyExist) {
+      res.status(409).json(
+        { error: "User aleardy exist" }
+      )
+    }
     const new_user = await prisma.user.create({
       data: {
-        username: username || null, // Handle optional field by setting null if not provided
-        wallet,
-        email: email || null, // Handle optional field by setting null if not provided
+        wallet: wallet,
       },
     });
 
-    if (!new_user) { return res.json({ error: "Could not create user with such wallet addresss!" }) };
+    if (!new_user) {
+      return res.json({ error: "Could not create user with such wallet addresss!" })
+    };
     // Send success response
-    return res.json({ message: "User created successfully", new_user });
+    return res.status(201).json({
+      sucess: true,
+      message: "User created successfully",
+      user: new_user
+    });
   } catch (error:any) {
     // Handle Prisma errors or other errors
-    console.log(error);
-    return res.status(500).json({ message: "Error creating user", error: error.message });
+    return res.status(500).json({
+      sucess: false,
+      message: "Error creating user",
+      error: error.message
+    });
   }
 }
 
 
-//-------------------------- getAll users ---------------------------------------
-
-export async function getUsers(req: Request, res: Response) {
-    //prisma query
-    const allUsers = await prisma.user.findMany();
-    if (!allUsers) {
-        return res.json({ message: "No users found!"}).status(  404 );
-    }
-    //return users 
-    return res.json(allUsers).status(201);
-}
-
-//-------------------------- get User by id --------------------------------------
-
-export async function getUserByWallet(req: Request, res: Response) {
-  try {
-    const { wallet } = req.params;
-    if (!wallet) {
-      return res.json({ error: "No wallet provided" }).status(402);
-    }
-    //fetch user
-    const user = await prisma.user.findUnique({ where: { wallet: wallet } });
-    if (!user) {
-      return res.json({ message: "No user found for given id" }).status(404);
-    }
-    return res.json(user);
-  } catch (err) {
-    console.error(err)
+export async function login(req: Request, res: Response) {
+  const { wallet } = req.body;
+  if (!wallet) {
+    return res.json({error: "No wallet found!"}).status(400)
   }
+  
+  const user = await prisma.user.findUnique({
+    where: {
+      wallet: wallet
+    }
+  });
+  if (!user) {
+    return res.json({ error: "Invalid wallet" }).status(404);
+  }
+  const acessToken = signAcessToken(wallet, user.id);
+  const refreshToken = signRefreshToken(wallet, user.id);
+  res.cookie(
+     'refreshToken',
+    refreshToken,
+    {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // only over HTTPS in production
+    sameSite: 'strict',
+    maxAge: 3600 * 24 * 7  // 7 days
+    });
+  
+  // send acess token back to client
+  return res.json({
+    sucess: true,
+    acessToken: acessToken,
+    message: "Login sucessful",
+    user: user
+  });
 }
 
+// Refresh acess token
+export async function refreshToken(req: Request, res: Response) {
+  const refreshtoken = req.cookies.refreshToken;
+  if (!refreshtoken) {
+    res.json({ error: 'No refresh token ' }).status(400);
+  }
+  const { userId, wallet } = verifyToken(refreshtoken);
+  if (!userId || ! wallet) {
+    res.json({ error: "Could not verify refresh token" }).status(404);
+  }
+  const user = await prisma.user.findUnique({
+    where: {
+      wallet: wallet
+    }
+  });
+
+  if (!user) {
+    res.json({ error: "Failed to fetch user " }).status(404);
+  }
+
+  // rotate refresh token
+  const newRefreshToken = signRefreshToken(wallet, userId);
+  res.cookie('refreshToken', newRefreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 3600
+  });
+
+  // generate a new acess token and send to client 
+  const newAcessToken = signAcessToken(wallet, userId);
+  res.json({
+    sucess: true,
+    acessToken: newAcessToken,
+    message: "token refreshed",
+    user: user
+  }).status(200)
+}

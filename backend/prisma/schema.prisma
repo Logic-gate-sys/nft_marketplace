@@ -1,69 +1,59 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
-  // output   = "../src/generated/prisma"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 
-//------------------------------- SCHEMAS -------------------------------------------------------------
-model User {
-  user_id     String       @id @default(uuid())
-  username    String?
-  wallet      String       @unique
-  email       String?
-//references: 
-  collections Collection[]
-  nfts        Nft[]
-}
+// --------------------- SCHEMA -----------------------------------------
 
 model Collection {
-  col_id     Int      @id @default(autoincrement())
-  user_id    String
-  col_uri    String
-  create_at  DateTime @default(now())
-  // type       String   @default("On-Chain")    : this field is already store on pinata
-  user User   @relation(fields: [user_id], references: [user_id])
-  nfts Nft[]
+  col_uri   String
+  create_at DateTime   @default(now())
+  id        Int        @id @default(autoincrement())
+  user_id   Int
+  User      User       @relation(fields: [user_id], references: [id])
+  Listings  Listings[]
+  Nft       Nft[]
+}
+
+model Listings {
+  col_id     Int
+  nft_id     Int
+  price      BigInt
+  owner      String
+  listed_at  DateTime   @default(now())
+  id         Int        @id @default(autoincrement())
+  Collection Collection @relation(fields: [col_id], references: [id])
 }
 
 model Nft {
-  nft_id    Int    @id @default(autoincrement())
-  token_id  String
-  col_id    Int
-  nft_uri   String?
-  name      String
-  owner_id  String
-  collection Collection @relation(fields: [col_id], references: [col_id])
-  user      User       @relation(fields: [owner_id], references: [user_id])
+  id         Int   @unique    @id @default(autoincrement())
+  col_id     Int
+  uri    String?
+  token_id   Int
+  owner_id   Int
+  Collection Collection @relation(fields: [col_id], references: [id])
+  User       User       @relation(fields: [owner_id], references: [id])
 }
-
-//----------------------- Transaction Related ----------------------------
-model Listings {
-  listing_id    Int  @id@default(autoincrement())
-  col_id        Int    
-  nft_id        Int
-  price         BigInt
-  owner         String
-  listed_at     DateTime @default(now())
-  collection Collection @relation(fields: [col_id], references: [col_id])
-}
-
 
 model Sold {
-  trx_id        Int @id@default(autoincrement())
-  tokenId       Int
-  from          String 
-  to            String
-  amount        Int
-  at            DateTime @default(now())
+  tokenId Int
+  from    String
+  to      String
+  amount  Int
+  at      DateTime @default(now())
+  id      Int      @id @default(autoincrement())
+}
+
+model User {
+  id         Int          @id @default(autoincrement())
+  username   String?
+  wallet     String       @unique
+  email      String?
+  Collection Collection[]
+  Nft        Nft[]
 }
