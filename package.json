@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@isaacs/ttlcache": "^2.1.3"
+  }
+}
