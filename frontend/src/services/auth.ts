@@ -1,3 +1,4 @@
+import { RestFilled } from "@ant-design/icons";
 import { useAuth } from "../context/AuthContext";
 
 //---------------------- function find user_ by wallet 
@@ -26,7 +27,14 @@ export const login = async (wallet: string) => {
 
 
 //---------------------- create user ---------------------------
-export const createUser = async (wallet: string, email?: string, username?: string) :Promise<any> => {
+type CreateUserResult = {
+    ok: boolean;
+    status: number | 201;
+    reason: string |'duplicate' |'bad_request' ;
+    user: any;
+}
+
+export const createUser = async (wallet: string, email?: string, username?: string) :Promise<CreateUserResult> => {
     const res = await fetch(
         `${BASE_URL}/users`,
         {
@@ -34,13 +42,17 @@ export const createUser = async (wallet: string, email?: string, username?: stri
             headers: { "Content-Type": "application/json" },
             body:JSON.stringify({ wallet: wallet })
         });
-    if (!res.ok) {
-        console.error("User registeration failed");
-        return;
+    // if status is bad
+    if (res.status === 409) {
+        return { ok:false, status: 409, reason: 'duplicate', user:null};
     }
-    const { user} = await res.json();
-    // 
-    return user;
+    else if (!res.ok) {
+        console.error("User registeration failed");
+        return { ok:false, status: 401, reason: 'bad_request', user:null};;
+    }
+    
+    const { user } = await res.json();
+    return { ok: true, status: 201, reason: 'success', user: user };
 }
 
 export const refreshToken = async () => {

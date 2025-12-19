@@ -18,7 +18,9 @@ export async function createUser(req:Request, res:Response) {
       where: { wallet: wallet }
     }) ? true : false;
     if (alreadyExist) {
-      res.status(409).json({error: "User aleardy exist"})
+      res.status(409).json(
+        { error: "User aleardy exist" }
+      )
     }
     const new_user = await prisma.user.create({
       data: {

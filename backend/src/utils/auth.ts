@@ -46,4 +46,3 @@ export const verifyToken =  (token: string) =>{
   const { userId, wallet } = paylaod;
   return { userId, wallet };
 }
-
