@@ -20,13 +20,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }){
     const [token, setToken] = useState<string|null>(null);
 
     // connecting wallat sets the contex 
-    const connectWallet = (wallet: string, signer: Signer, provider: Provider, user?: any, oken?: string, ) => {
+    const connectWallet = (wallet: string, signer: Signer, provider: Provider, user?: any, token?: string ) => {
         // set states on wallet connect 
         setSigner(signer);
         setUser(user ? user : {});
         setWallet(wallet);
         setProvider(provider);
-        setToken(token? token : null);
+        setToken(token?? null );
     }
 
     return (
