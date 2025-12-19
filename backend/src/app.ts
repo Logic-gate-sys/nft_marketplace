@@ -4,6 +4,7 @@ import cors from 'cors';
 import userRouter from './route/userRoute';
 import cookieParser from 'cookie-parser';
 import collectionRouter from './route/collectionRoute';
+import nftRouter from './route/nftRoute';
 
 
 //app configuration
@@ -30,8 +31,8 @@ app.use('/api/users', userRouter);
 // collections end poing e.g http://localhost:3000/api/collections
 app.use('/api/collections', collectionRouter);
 
-// // nft endpoint e.g http://localhost:3000/api/nfts
-// app.use('/api/nfts', nftRouter);
+// nft endpoint e.g http://localhost:3000/api/nfts
+app.use('/api/nfts', nftRouter);
 
 
 // ------------------------ global error handling --------------------------------

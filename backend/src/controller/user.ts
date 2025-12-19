@@ -18,7 +18,7 @@ export async function createUser(req:Request, res:Response) {
       where: { wallet: wallet }
     }) ? true : false;
     if (alreadyExist) {
-      res.status(409).json(
+      return res.status(409).json(
         { error: "User aleardy exist" }
       )
     }
