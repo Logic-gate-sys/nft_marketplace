@@ -461,7 +461,7 @@ export const MintForm = ({
         </section>
 
         {/* -------------------- ONCHAIN MINT ------------------------------------ */}
-        {type == "onchain" && (
+        {type === "onchain" && (
           <section className="px-6 pb-6">
             <form
               onSubmit={handleOnchainMint}

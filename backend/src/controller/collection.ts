@@ -213,6 +213,7 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
 
         return {
           id: col.id.toString(),
+          type:meta?.type,
           name: meta.name ?? 'Unnamed Collection',
           cover: ipfsCIDToHttp(meta.cover) ?? '',
           logo: ipfsCIDToHttp(meta.logo) ?? '',
@@ -351,6 +352,7 @@ export const fetchUserCollections = async (req: any, res: Response) => {
 
         return {
           id: col.id.toString(),
+          type:meta?.type,
           name: meta.name ?? 'Unnamed Collection',
           cover: ipfsCIDToHttp(meta.cover) ?? '',
           logo: ipfsCIDToHttp(meta.logo) ?? '',
@@ -483,6 +485,7 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
 
     const transformedCollection = {
       id: collection.id.toString(),
+      type: meta?.type,
       name: meta.name ?? 'Unnamed Collection',
       cover: ipfsCIDToHttp(meta.cover) ?? '',
       logo: ipfsCIDToHttp(meta.logo) ?? '',
