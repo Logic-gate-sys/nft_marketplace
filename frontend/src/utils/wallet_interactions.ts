@@ -10,32 +10,44 @@ declare global {
 }
 
 
+
 /**
  * @summary : this utility function connects to a wallet provider and returns the wallet, 
  * signer and provider or an error
  * @returns wallet, signer, & provider
  */
-export const connectUserWallet = async (): Promise<any> => {
-  try {
-    if (!window.ethereum) {
-      alert('MetaMask is not installed. Please install it to continue.');
-      return;
-    }
-    await window.ethereum.request({ method: "eth_requestAccounts" });
-    console.log('MetaMask detected');
-    //get provider,signer and wallet
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const wallet = (await signer.getAddress()).toLowerCase();
-    console.log("CONNECTION SUCESSFUL !  DETAILS: ", provider);
-    return { provider, signer, wallet };
-    
-  } catch (error) {
-    console.error('Wallet connection failed', error);
-    return;
-  }
-};
 
+let browserProvider: ethers.BrowserProvider | null = null;
+let readProvider: ethers.JsonRpcProvider | null = null;
+
+export const connectUserWallet = async () => {
+  if (!window.ethereum) {
+    throw new Error("MetaMask not installed");
+  }
+
+  // Request accounts ONCE
+  await window.ethereum.request({ method: "eth_requestAccounts" });
+
+  if (!browserProvider) {
+    browserProvider = new ethers.BrowserProvider(window.ethereum);
+  }
+
+  if (!readProvider) {
+    readProvider = new ethers.JsonRpcProvider(
+      import.meta.env.VITE_ALCHEMY_PROVIDER
+    );
+  }
+
+  const signer = await browserProvider.getSigner();
+  const wallet = (await signer.getAddress()).toLowerCase();
+
+  return {
+    provider: browserProvider,
+    readProvider,
+    signer,
+    wallet
+  };
+};
 
 
 

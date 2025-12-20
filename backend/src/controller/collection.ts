@@ -1,14 +1,22 @@
 import { prisma } from './../lib/prisma';
 import { Request, Response } from 'express';
-import { uploadImageToPinata, uploadCollectionMetaData } from '../utils/ifpfs';
+import {
+  uploadImageToPinata,
+  uploadCollectionMetaData,
+  upload_nft_metadata,
+} from '../utils/ifpfs';
 import { fetchAbiFromEtherscan } from '@/utils/ABI';
 import {
   ipfsCIDToHttp,
   ipfsToHttp,
   fetchIpfsMetadata,
   formatCollectionMetadata,
+  decodeOnChainTokenURI,
 } from '../utils/ifpfs';
 import { JsonWebTokenError } from 'jsonwebtoken';
+import { urlToHttpOptions } from 'node:url';
+import nftRouter from '@/route/nftRoute';
+import { decode } from 'node:punycode';
 
 // coverImage: null,
 // logoImage: null,
@@ -58,12 +66,10 @@ export const create_offchain_collection = async (
     logo.mimetype
   );
   if (!logo_uri) {
-    return res
-      .status(403)
-      .json({
-        error: 'Upload failed',
-        message: 'Could not upload file 2 to pinata',
-      });
+    return res.status(403).json({
+      error: 'Upload failed',
+      message: 'Could not upload file 2 to pinata',
+    });
   }
   //upload collection data to ipfs
 
@@ -163,18 +169,47 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
     // Transform collections
     const transformedCollections = await Promise.all(
       collections.map(async (col) => {
-        // Fetch collection metadata
         const meta = await fetchIpfsMetadata(col.col_uri);
 
-        // Transform NFTs in this collection
-        const transformedNfts = col.Nft.map((nft) => ({
-          id: nft.id,
-          tokenId: nft.token_id,
-          uri: nft.uri ?? '',
-          ownerId: nft.User.id,
-          ownerWallet: nft.User.wallet,
-          ownerName: nft.User.username ?? 'Unnamed',
-        }));
+        const transformedNfts = await Promise.all(
+          (col.Nft ?? []).map(async (nft) => {
+            // OFF-CHAIN NFT
+            if (meta.type === 'offchain') {
+              if (!nft.uri) {
+                return;
+              }
+              const metadata = await fetchIpfsMetadata(nft.uri);
+
+              return {
+                id: nft.id,
+                tokenId: nft.token_id,
+                uri: ipfsCIDToHttp(metadata.image) ?? '',
+                attributes: metadata.attributes ?? {},
+                ownerId: nft.User.id,
+                ownerWallet: nft.User.wallet,
+                ownerName: nft.User.username ?? 'Unnamed',
+              };
+            }
+
+            // ON-CHAIN NFT
+            if (!nft.uri) {
+              return;
+            }
+            // decodec
+            const decoded = decodeOnChainTokenURI(nft.uri);
+
+            // URL
+            return {
+              id: nft.id,
+              tokenId: nft.token_id,
+              uri: decoded.image ?? '',
+              attributes: decoded.metadata ?? {},
+              ownerId: nft.User.id,
+              ownerWallet: nft.User.wallet,
+              ownerName: nft.User.username ?? 'Unnamed',
+            };
+          })
+        );
 
         return {
           id: col.id.toString(),
@@ -188,8 +223,8 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
           items: col._count.Nft,
           listedItems: col._count.Listings,
           nfts: transformedNfts,
-          floorPrice: 0, // TODO: calculate from listings
-          volume: 0, // TODO: calculate from sales
+          floorPrice: 0,
+          volume: 0,
           creator: col.User.wallet,
           creatorName: col.User.username ?? 'Unnamed',
           creatorId: col.User.id,
@@ -232,25 +267,19 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
 
 export const fetchUserCollections = async (req: any, res: Response) => {
   try {
-    const userId = req.user?.userId; //passed from the auth middleware
-    const { skip =0, take=10 } = req.query;
+    const userId = req.user?.userId;
+    const skip = Number(req.query.skip ?? 0);
+    const take = Number(req.query.take ?? 10);
+    const sortBy = req.query.sortBy ?? 'recent';
 
-    // Validate authentication
     if (!userId) {
       return res.status(401).json({
         success: false,
-        error: 'Unauthorized',
         message: 'User authentication required',
       });
     }
 
-    // Optional query parameters
-    const { sortBy = 'recent'} = req.query;
-
-
-
     const collections = await prisma.collection.findMany({
-     // match only the collections that corresponds to user id
       where: { user_id: userId },
       include: {
         _count: { select: { Nft: true, Listings: true } },
@@ -264,44 +293,61 @@ export const fetchUserCollections = async (req: any, res: Response) => {
                 wallet: true,
               },
             },
-          }
-        }
+          },
+        },
       },
-      // pagination 
-      skip: skip,
-      take: take,
-
-      // oder the return data to prevent inconsistency
-      orderBy: {
-        create_at: "asc"
-      }
+      skip,
+      take,
+      orderBy: { create_at: 'asc' },
     });
 
-    // Total count of Collections belong to user 
     const totalCollections = await prisma.collection.count({
-      where: {
-        user_id: userId
-      },
+      where: { user_id: userId },
     });
 
-    /**
-     * This replaces all cid with http urls
-     * future functionalities would fetch and refine nfts with their metadata appropriately
-     * 
-     */
     const transformedCollections = await Promise.all(
       collections.map(async (col) => {
-        // Fetch collection metadata
         const meta = await fetchIpfsMetadata(col.col_uri);
-        // Transform NFTs in this collection
-        const transformedNfts = col.Nft?.map((nft) => ({
-          id: nft.id,
-          tokenId: nft.token_id,
-          uri: nft.uri ?? '',
-          ownerId: nft.User.id,
-          ownerWallet: nft.User.wallet,
-          ownerName: nft.User.username ?? 'Unnamed',
-        }));
+
+        const transformedNfts = await Promise.all(
+          (col.Nft ?? []).map(async (nft) => {
+            // OFF-CHAIN NFT
+            if (meta.type === 'offchain') {
+              if (!nft.uri) {
+                return;
+              }
+              const metadata = await fetchIpfsMetadata(nft.uri);
+
+              return {
+                id: nft.id,
+                tokenId: nft.token_id,
+                uri: ipfsCIDToHttp(metadata.image) ?? '',
+                attributes: metadata.attributes ?? {},
+                ownerId: nft.User.id,
+                ownerWallet: nft.User.wallet,
+                ownerName: nft.User.username ?? 'Unnamed',
+              };
+            }
+
+            // ON-CHAIN NFT
+            if (!nft.uri) {
+              return;
+            }
+            // decodec
+            const decoded = decodeOnChainTokenURI(nft.uri);
+
+            // URL
+            return {
+              id: nft.id,
+              tokenId: nft.token_id,
+              uri: decoded.image ?? '',
+              attributes: decoded.metadata ?? {},
+              ownerId: nft.User.id,
+              ownerWallet: nft.User.wallet,
+              ownerName: nft.User.username ?? 'Unnamed',
+            };
+          })
+        );
 
         return {
           id: col.id.toString(),
@@ -315,8 +361,8 @@ export const fetchUserCollections = async (req: any, res: Response) => {
           items: col._count.Nft,
           listedItems: col._count.Listings,
           nfts: transformedNfts,
-          floorPrice: 0, // TODO: calculate from listings
-          volume: 0, // TODO: calculate from sales
+          floorPrice: 0,
+          volume: 0,
           creator: col.User.wallet,
           creatorName: col.User.username ?? 'Unnamed',
           creatorId: col.User.id,
@@ -325,30 +371,23 @@ export const fetchUserCollections = async (req: any, res: Response) => {
       })
     );
 
-    // Sort by items if requested
     if (sortBy === 'items') {
       transformedCollections.sort((a, b) => b.items - a.items);
     }
-    // Pagination metadata
+
     return res.json({
       success: true,
       data: transformedCollections,
-      pagination: {
-        total: totalCollections
-      },
+      pagination: { total: totalCollections },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching user collections:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      error: 'Server Error',
       message: 'Failed to fetch user collections',
     });
   }
 };
-
-
-
 
 export const fetchCollectionById = async (req: Request, res: Response) => {
   try {
@@ -399,39 +438,63 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
         message: 'Collection not found',
       });
     }
-
     // Fetch IPFS metadata
     const meta = await fetchIpfsMetadata(collection.col_uri);
 
-    // Transform NFTs
-    const transformedNfts = collection.Nft.map((nft) => ({
-      id: nft.id,
-      tokenId: nft.token_id,
-      uri: nft.uri ?? '',
-      ownerId: nft.User.id,
-      ownerWallet: nft.User.wallet,
-      ownerName: nft.User.username ?? 'Unnamed',
-      isListed: false, // TODO: derive from Listings table
-    }));
+    const transformedNfts = await Promise.all(
+      (collection.Nft ?? []).map(async (nft) => {
+        // OFF-CHAIN NFT
+        if (meta.type === 'offchain') {
+          if (!nft.uri) {
+            return;
+          }
+          const metadata = await fetchIpfsMetadata(nft.uri);
+
+          return {
+            id: nft.id,
+            tokenId: nft.token_id,
+            uri: ipfsCIDToHttp(metadata.image) ?? '',
+            attributes: metadata.attributes ?? {},
+            ownerId: nft.User.id,
+            ownerWallet: nft.User.wallet,
+            ownerName: nft.User.username ?? 'Unnamed',
+          };
+        }
+
+        // ON-CHAIN NFT
+        if (!nft.uri) {
+          return;
+        }
+        // decodec
+        const decoded = decodeOnChainTokenURI(nft.uri);
+
+        // URL
+        return {
+          id: nft.id,
+          tokenId: nft.token_id,
+          uri: decoded.image ?? '',
+          attributes: decoded.metadata ?? {},
+          ownerId: nft.User.id,
+          ownerWallet: nft.User.wallet,
+          ownerName: nft.User.username ?? 'Unnamed',
+        };
+      })
+    );
 
     const transformedCollection = {
       id: collection.id.toString(),
-      type:meta?.type,
-      name: meta?.name ?? 'Unnamed Collection',
-      cover: meta?.cover ? ipfsCIDToHttp(meta.cover) : '',
-      logo: meta?.logo ? ipfsCIDToHttp(meta.logo) : '',
-      description: meta?.description ?? '',
-      symbol: meta?.symbol ?? '',
-      category: meta?.category ?? 'other',
-      contractAddress: meta?.contractAddress ?? '',
-
+      name: meta.name ?? 'Unnamed Collection',
+      cover: ipfsCIDToHttp(meta.cover) ?? '',
+      logo: ipfsCIDToHttp(meta.logo) ?? '',
+      description: meta.description ?? '',
+      symbol: meta.symbol ?? '',
+      category: meta.category ?? 'other',
+      contractAddress: meta.contractAddress ?? '',
       items: collection._count.Nft,
       listedItems: collection._count.Listings,
       nfts: transformedNfts,
-
-      floorPrice: 0, // TODO: calculate from lowest listing
-      volume: 0, // TODO: calculate from Sold table
-
+      floorPrice: 0,
+      volume: 0,
       creator: collection.User.wallet,
       creatorName: collection.User.username ?? 'Unnamed',
       creatorId: collection.User.id,
@@ -452,41 +515,42 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
   }
 };
 
-// fech collction abi 
+// fech collction abi
 /**
- * 
+ *
  * @param req ; request object that the user has been attached to after authentication
  * @param res  result that is returned after request executes successfully
- * @returns 
+ * @returns
  */
 export const fetchCollectionABI = async (req: any, res: Response) => {
-  try { 
-  const { contractAddress } = req.query;
-  const user_id = req.user?.userId;
-  if ( !user_id || !contractAddress) {
-    return res.status(400).json({
-      success: false,
-      message: "User id or contract address or collection address is not provided",
-      error: "Bad request body"
-    })
-  }
-  // getting all the necessary abi 
+  try {
+    const { contractAddress } = req.query;
+    const user_id = req.user?.userId;
+    if (!user_id || !contractAddress) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'User id or contract address or collection address is not provided',
+        error: 'Bad request body',
+      });
+    }
+    // getting all the necessary abi
     const ABI = await fetchAbiFromEtherscan(contractAddress);
     if (!ABI) {
       return res.status(404).json({
         success: false,
-        message: 'No ABI found from ethersan'
+        message: 'No ABI found from ethersan',
       });
     }
- // Student 
+    // Student
     return res.status(200).json({
       success: true,
       data: ABI,
-      message: "ABI returned  successfully"
+      message: 'ABI returned  successfully',
     });
   } catch (e: any) {
     console.log(e);
-  console.log(e.message);
-  return;
-}
-}
+    console.log(e.message);
+    return;
+  }
+};
