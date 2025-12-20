@@ -77,7 +77,7 @@ const StudioCollectionView: React.FC = () => {
     };
 
     fetchCollection();
-  }, [col_id]);
+  }, [col_id, wantToMint]);
 
   // Get NFTs from collection
   const collectionNFTs = useMemo(() => {
