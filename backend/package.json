@@ -4,9 +4,13 @@
   "description": "",
   "main": ".eslintrc.js",
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--use-system-ca nodemon --exec tsx src/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "dev": "cross-env NODE_OPTIONS=--use-system-ca nodemon --exec tsx src/server.ts",
+  "start": "node --use-system-ca ./node_modules/tsx/dist/cli.js src/server.ts",
+  "build":"tsc",
+  "start_prod": "tsx src/server.ts"
+
+}
+,
   "keywords": [],
   "author": "Logic Gates",
   "license": "ISC",

@@ -54,12 +54,14 @@ export interface CollectionCardProps{
 }
 
 export interface NFTCardProps {
+  id:number,
   tokenId: number | string;
   image?: string | null;
   contractAddress?: string;
   price?: number | string | null;
   lastPrice?: number | string | null;
   isListed?: boolean;
+  col_name?: string;
   context?: 'studio' | 'marketplace';
   onClick?: () => void;
   onBuy?: () => void;
