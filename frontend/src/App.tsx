@@ -22,7 +22,8 @@ const App: React.FC = () => {
   const handleWalletConnect = async (): Promise<void> => {
     try {
       // retrieve ethers details
-      const { signer, provider, wallet } = await connectUserWallet();
+      const { readProvider, provider, signer, wallet } = await connectUserWallet();
+      console.log("READ ALCHEMY PROVIDER ", readProvider);
       if (!wallet) {
         console.log("Could not retrieve wallet address");
         return;
@@ -46,7 +47,7 @@ const App: React.FC = () => {
           }
         }
         // assign Auth details
-        connectWallet(wallet, signer, provider, user, acessToken);
+        connectWallet(wallet, signer, provider,readProvider,user, acessToken);
         setConnected(true);
       }
       // safely return
