@@ -14,7 +14,8 @@ app.use(
     
     origin: [
       "http://127.0.0.1:5173",
-      "https://nft-marketplace-yaf4.onrender.com"
+      "https://nft-marketplace-yaf4.onrender.com",
+      "https://memora-qb3p.onrender.com"
     ],   // your Vite 
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
