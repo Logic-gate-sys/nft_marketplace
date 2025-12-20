@@ -10,6 +10,7 @@ import {
 import type { Tab } from '../../components/sections/TabNavigation';
 import { FetchedCollection } from '../../services/types';
 import { fetchCollectionById } from '../../utils/fetchCollections';
+import { truncate } from 'fs/promises';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
@@ -28,7 +29,7 @@ const StudioCollectionView: React.FC = () => {
   const [collection, setCollection] = useState<FetchedCollection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [wantsToMint, setWantToMint] = useState( false);
+  const [wantToMint, setWantToMint] = useState( false);
 
   // Determine context from route
   const isStudioContext = location.pathname.includes('/studio/collection');
@@ -236,7 +237,6 @@ const StudioCollectionView: React.FC = () => {
               <div className="flex gap-2 mb-2">
                 <button 
                   className="btn-primary"
-                  onClick={()=> setWantToMint(true)}
                 >
                   {collection.type}
                 </button>
@@ -324,37 +324,11 @@ const StudioCollectionView: React.FC = () => {
                     className="btn-primary"
                     onClick={()=> setWantToMint(true)}
                   >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
+
                     Mint NFT
                   </button>
                 )}
 
-                {/* Status Filter - Studio Only */}
-                {isStudioContext && (
-                  <select 
-                    className="input text-sm py-2 flex-1 sm:flex-none"
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value as 'all' | 'listed' | 'unlisted')}
-                  >
-                    <option value="all">All Items</option>
-                    <option value="listed">Listed</option>
-                    <option value="unlisted">Unlisted</option>
-                  </select>
-                )}
-                
-                {/* Sort */}
-                <select 
-                  className="input text-sm py-2 flex-1 sm:flex-none"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                >
-                  <option value="recent">Recently Added</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="name">Name: A to Z</option>
-                </select>
               </div>
             </div>
 
@@ -374,10 +348,7 @@ const StudioCollectionView: React.FC = () => {
                 }
                 action={
                   isStudioContext ? (
-                    <button className="btn-primary" onClick={()=>setWantToMint}>
-                      <svg className="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
+                    <button className="btn-primary" onClick={()=>setWantToMint(true)}>
                       Mint Your First NFT
                     </button>
                   ) : (
@@ -388,20 +359,19 @@ const StudioCollectionView: React.FC = () => {
                 }
               />
             ) : (
-              <CardGrid cols={{ sm: 2, md: 3, lg: 4, xl: 5 }}>
+              <CardGrid cols={{ sm: 3, md: 3, lg: 4, xl: 5 }}>
                 {filteredNFTs.map((nft) => (
                   <NFTCard
                     key={nft.id}
+                    tokenId={nft?.tokenId}
+                    col_name={collection.name }
                     id={nft.id}
-                    name={nft.name}
-                    image={nft.image}
+                    image={nft.uri}
                     price={nft.price}
                     isListed={nft.isListed}
-                    collectionName={nft.collectionName || collection.name}
                     context={isStudioContext ? 'studio' : 'marketplace'}
                     loading={false}
                     onClick={() => handleNFTClick(nft.id)}
-                    onFavorite={() => console.log('Favorited:', nft.id)}
                     onList={isStudioContext && !nft.isListed ? () => handleList(nft.id) : undefined}
                     onUnlist={isStudioContext && nft.isListed ? () => handleUnlist(nft.id) : undefined}
                     onBuy={!isStudioContext && nft.isListed ? () => handleBuy(nft.id) : undefined}
@@ -424,7 +394,7 @@ const StudioCollectionView: React.FC = () => {
           />
         )}
       </div>
-      {wantsToMint && <MintForm type={collection.type}  col_id={collection.id} col_address={collection.contractAddress} col_owner={collection.creator} />}
+      {wantToMint && <MintForm type={collection.type} col_id={collection.id} col_address={collection.contractAddress} col_owner={collection.creator} owner_id={collection.creatorId} setWantToMint={setWantToMint} />}
     </div>
   );
 };
