@@ -109,28 +109,15 @@ export const uploadCollectionMetaData = async (
   owner_id  String
 
  */
-export const upload_nftMetaData_pinata = async (
-  name: string,
-  image_uri: string,
-  background: string,
-  body: string,
-  description: string,
-  eye: string
-) => {
-  const metaData = {
-    image: image_uri,
-    background: background,
-    body: body,
-    description: description,
-    eye: eye,
-  };
+export const upload_nftMetaData_pinata = async (image:string, attributes: any) => {
+  const metaData = { image: image, attributes: attributes};
   try {
     //create a blob
     const metaDataBlob = new Blob([JSON.stringify(metaData)], {
       type: 'application/json',
     });
     //create file from blob
-    const file = new File([metaDataBlob], `${name}.json`, {
+    const file = new File([metaDataBlob], `.json`, {
       type: 'application/json',
     });
     const upload = await pinata.upload.public.file(file);
@@ -205,3 +192,34 @@ export function formatCollectionMetadata(meta: RawMetadata) {
     logo: toHttp(meta.logo),
   };
 }
+
+
+// onchain image and metadata extraction 
+export const decodeOnChainTokenURI = (tokenURI: string) => {
+  if (!tokenURI) {
+    throw new Error("tokenURI is empty");
+  }
+
+  const trimmed = tokenURI.trim();
+
+  // Not base64 → treat as normal URL
+  if (!trimmed.startsWith("data:application/json;base64,")) {
+    return {
+      metadata: {},
+      image: trimmed,
+    };
+  }
+
+  const base64Json = trimmed.split(",")[1];
+  const jsonString = Buffer.from(base64Json, "base64").toString("utf-8");
+  const metadata = JSON.parse(jsonString);
+
+  if (!metadata.image) {
+    throw new Error("No image field in metadata");
+  }
+
+  return {
+    metadata,
+    image: metadata.image,
+  };
+};
