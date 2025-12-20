@@ -1,7 +1,7 @@
-import { ethers, Signer, Provider, Signature } from "ethers";
+import { ethers, Signer, Provider, Signature, ZeroAddress, Contract } from "ethers";
 import axios from "axios";
 const ETHERSCAN_API_KEY = import.meta.env.VITE_ETHERSCAN_API_KEY;
-const BASE_URL = import.meta.env.BASE_URL;
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 /*
 --------------- MODE OF INTERACTIONS ---------------- :
 1. login with wallet address via metamusk should only allow users to view their collections :
@@ -21,7 +21,7 @@ const BASE_URL = import.meta.env.BASE_URL;
  * @param abi - abi of the contract address
  * @returns  an instance of the contract who's abi and address are provided by the user
  */
-export const getWriteContractInstance = async (
+export const getWriteContractInstance = (
   address: string,
   abi: any,
   signer: Signer
@@ -39,33 +39,7 @@ export const getWriteContractInstance = async (
   }
 };
 
-/**
- * 
- * @param contractAddress   try { 
-  const { col_id, contractAddress } = req.query;
-  const user_id = req.user?.userId;
-  if (!col_id || !user_id || !contractAddress) {
-    return res.status(400).json({
-      success: false,
-      message: "User id or contract address or collection address is not provided",
-      error: "Bad request body"
-    })
-  }
-  // getting all the necessary abi 
-    const ABI = await fetchAbiFromEtherscan(contractAddress);
-    if (ABI.length == 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'No ABI found from ethersan'
-      });
-    }
- // Student 
-    return res.status(200).json({
-      success: true,
-      data: ABI,
-      message: "ABI returned  success
- * @param token 
- */
+
 
 export const fetchContractABI = async (contractAddress: string, token: string) => {
   const res = await fetch(`${BASE_URL}/collections/collection/abi?contractAddress=${contractAddress}`,
@@ -88,28 +62,28 @@ export const fetchContractABI = async (contractAddress: string, token: string) =
 }
 
 
-/**
- * @contexts for testing only: 
- *  This uses the factory pattern
- * string memory name,
-        string memory symbol,
-        uint256 total_supply,
-        string memory contract_uri
- */
-export const getCollectionInstanceFromFactory = async (
-  factoryInstance: any,
-  name: string,
-  symbol: string,
-  total_supply: number,
-  contract_uri:string
-): Promise<any> => {
-  const collectionCloneAddress = await factoryInstance.createCollection(name,symbol,total_supply);
-  if (!collectionCloneAddress) {
-    console.log("Could not get collection instance ");
-    return;
-  }
-  const collectionCloneInstance = new ethers.Contract(collectionCloneAddress,collecion);
-}
+// /**
+//  * @contexts for testing only: 
+//  *  This uses the factory pattern
+//  * string memory name,
+//         string memory symbol,
+//         uint256 total_supply,
+//         string memory contract_uri
+//  */
+// export const getCollectionInstanceFromFactory = async (
+//   factoryInstance: any,
+//   name: string,
+//   symbol: string,
+//   total_supply: number,
+//   contract_uri:string
+// ): Promise<any> => {
+//   const collectionCloneAddress = await factoryInstance.createCollection(name,symbol,total_supply);
+//   if (!collectionCloneAddress) {
+//     console.log("Could not get collection instance ");
+//     return;
+//   }
+//   const collectionCloneInstance = new ethers.Contract(collectionCloneAddress,collecion);
+// }
 
 
 /**
@@ -117,7 +91,7 @@ export const getCollectionInstanceFromFactory = async (
  * @param address - contract address
  * @returns an instance of the readonly contract instance
  */
-export const getReadOnlyContractInstance = async (
+export const getReadOnlyContractInstance =  (
   address: string,
   abi: any,
   provider: Provider
@@ -152,9 +126,15 @@ export const getReadOnlyContractInstance = async (
 
 
 //---------------------------------- mint Onchain function -----------------------
-export const mintOnChain = async ( contractInstance: any) => {
-  try {
-    const trx = await contractInstance.bakeCake(); //<--------------- bakeCake is not a standard mint function
+type MintResponseData = {
+  from: string | any,
+  to: string | any,
+  tokenId: bigint | any,
+}
+export const mintOnChain = async (contractInstance: any, to: string): Promise<MintResponseData | any> => {
+  try{
+    const trx = await contractInstance.mint(to); 
+    console.log("Mint Transaction -------------: ", trx);
     const receipt = await trx.wait();
     //if transaction producess no receipt
     if (!receipt) {
@@ -162,28 +142,61 @@ export const mintOnChain = async ( contractInstance: any) => {
       return;
     }
     // return receipt
-    return receipt
+    for (const log of receipt.logs) {
+      const parsed = await contractInstance.interface.parseLog(log);
+      if (parsed && parsed.name === 'Transfer') {
+        const [from, to, tokenId] = await parsed.args;
+        if (from === ZeroAddress) {
+          return { from, to, tokenId };
+        }
+      }
+  }
   } catch (err) {
     console.log(err);
     return;
   }
-
 }
 
-// --------------------------------- mint OffChain function ----------------------------
-export const mintOffChain = async (contractInstance:any, URI:string) => {
-  const trx = await contractInstance.mint(URI);
-  if (!trx) {
-    console.log("Off chain minting failed! ");
-    return;
-  }
-  const receipt = await trx.wait();
-  if (!receipt) {
-    console.log("No off-chain mint receipt found ");
-    return;
-  }
+// const getTokenURI = async (readContract: Contract, tokenId: bigint) => {
+//   try {
+//     const result = await readContract.tokenURI(tokenId);
+//     if (!result) {
+//       console.log("Not uri found for tokenId ");
+//       return;
+//     }
+//     return result; // tokenURI
+//   } catch (err: any) {
+//     console.log("Error : ", err.statusText);
+//     return;
+//   }
+// }
 
-  return receipt;
+// --------------------------------- mint OffChain function ----------------------------
+export const mintOffChain = async (contractInstance: any, URI: string) : Promise<MintResponseData | any> => {
+  try {
+    const trx = await contractInstance["mint(string)"](URI);
+    if (!trx) {
+      console.log("Off chain minting failed! ");
+      return;
+    }
+    const receipt = await trx.wait();
+    if (!receipt) {
+      console.log("No off-chain mint receipt found ");
+      return;
+    }
+    for (const log of receipt.logs) {
+      const parsed = contractInstance.interface.parseLog(log);
+      if (parsed && parsed.name === 'Transfer') {
+        const [from, to, tokenId] = parsed.args;
+        if (from === ZeroAddress) {
+          return { from, to, tokenId };
+        }
+      }
+    }
+  } catch (err: any) {
+    console.log('Error! : ', err);
+    return;
+  }
 }
   
 
