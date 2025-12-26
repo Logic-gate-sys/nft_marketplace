@@ -1,12 +1,4 @@
-import Event, {
-  Contract,
-  ethers,
-  EtherscanPlugin,
-  isAddress,
-  parseEther,
-  Provider,
-} from 'ethers';
-import BigNumber from 'ethers';
+import { Contract, ethers, Provider} from 'ethers';
 import { prisma } from './../lib/prisma';
 import { fetchAbiFromEtherscan } from '@/utils/ABI';
 import { provider } from './provider';
@@ -71,6 +63,12 @@ export const handleListing = async (
 
     // READ CONTRACT INSTACE TO GET TOKEN uri
     const tokenURI = await getTokenURI(nftAddress, provider, tokenId);
+    if (!tokenURI) {
+      console.log("Failed to fetch token uri");
+      return;
+    }
+    console.log("TOKEN ID : ", Number(tokenId));
+    console.log("URI : ", tokenURI);
 
     const nft = await prisma.nft.findFirst({
       where: {
@@ -95,15 +93,15 @@ export const handleListing = async (
       // if record exists
       update: {
         seller: seller,
-        base_price: ethers.parseEther(basePrice.toString()),
-        current_price: currentPrice.toString(),
+        base_price: basePrice,
+        current_price: currentPrice,
       },
       // if record is new
       create: {
         col_id: collection_id,
         token_id: Number(tokenId),
         seller: seller,
-        base_price: ethers.parseEther(basePrice.toString()),
+        base_price: basePrice,
       },
     });
 
