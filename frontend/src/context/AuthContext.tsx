@@ -8,7 +8,7 @@ interface AuthContextType{
     readProvider: any;
     provider: Provider | null;
     signer: Signer | null;
-    connectWallet: ( wallet:string,signer:Signer, provider:Provider, user?:any, token?:string ) => void;
+    connectWallet: ( wallet:string,signer: Signer, provider:Provider, user?:any, token?:string ) => void;
 }
 
 const AuthContext = createContext<AuthContextType>(null!);

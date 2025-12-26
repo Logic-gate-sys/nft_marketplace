@@ -7,10 +7,8 @@ datasource db {
   provider = "postgresql"
 }
 
-
-// --------------------- SCHEMA -----------------------------------------
-
 model Collection {
+  address   String? 
   col_uri   String
   create_at DateTime   @default(now())
   id        Int        @id @default(autoincrement())
@@ -21,21 +19,25 @@ model Collection {
 }
 
 model Listings {
-  col_id     Int
-  nft_id     Int
-  price      BigInt
-  owner      String
-  listed_at  DateTime   @default(now())
-  id         Int        @id @default(autoincrement())
-  Collection Collection @relation(fields: [col_id], references: [id])
+  id            Int        @id @default(autoincrement())
+  col_id        Int
+  token_id      Int
+  base_price    BigInt
+  current_price BigInt?
+  seller        String
+  listed_at     DateTime   @default(now())
+  Collection    Collection @relation(fields: [col_id], references: [id])
+
+  @@unique([col_id, token_id])
 }
 
+
 model Nft {
-  id         Int   @unique    @id @default(autoincrement())
   col_id     Int
-  uri    String?
+  id         Int        @id @unique @default(autoincrement())
   token_id   Int
   owner_id   Int
+  uri        String?
   Collection Collection @relation(fields: [col_id], references: [id])
   User       User       @relation(fields: [owner_id], references: [id])
 }
@@ -50,10 +52,10 @@ model Sold {
 }
 
 model User {
-  id         Int          @id @default(autoincrement())
   username   String?
   wallet     String       @unique
   email      String?
+  id         Int          @id @default(autoincrement())
   Collection Collection[]
   Nft        Nft[]
 }

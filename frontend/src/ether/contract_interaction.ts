@@ -1,5 +1,7 @@
 import { ethers, Signer, Provider, Signature, ZeroAddress, Contract } from "ethers";
 import axios from "axios";
+import { Token } from "graphql";
+import { parse } from "path";
 const ETHERSCAN_API_KEY = import.meta.env.VITE_ETHERSCAN_API_KEY;
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 /*
@@ -61,29 +63,6 @@ export const fetchContractABI = async (contractAddress: string, token: string) =
   return data;
 }
 
-
-// /**
-//  * @contexts for testing only: 
-//  *  This uses the factory pattern
-//  * string memory name,
-//         string memory symbol,
-//         uint256 total_supply,
-//         string memory contract_uri
-//  */
-// export const getCollectionInstanceFromFactory = async (
-//   factoryInstance: any,
-//   name: string,
-//   symbol: string,
-//   total_supply: number,
-//   contract_uri:string
-// ): Promise<any> => {
-//   const collectionCloneAddress = await factoryInstance.createCollection(name,symbol,total_supply);
-//   if (!collectionCloneAddress) {
-//     console.log("Could not get collection instance ");
-//     return;
-//   }
-//   const collectionCloneInstance = new ethers.Contract(collectionCloneAddress,collecion);
-// }
 
 
 /**
@@ -157,20 +136,6 @@ export const mintOnChain = async (contractInstance: any, to: string): Promise<Mi
   }
 }
 
-// const getTokenURI = async (readContract: Contract, tokenId: bigint) => {
-//   try {
-//     const result = await readContract.tokenURI(tokenId);
-//     if (!result) {
-//       console.log("Not uri found for tokenId ");
-//       return;
-//     }
-//     return result; // tokenURI
-//   } catch (err: any) {
-//     console.log("Error : ", err.statusText);
-//     return;
-//   }
-// }
-
 // --------------------------------- mint OffChain function ----------------------------
 export const mintOffChain = async (contractInstance: any, URI: string) : Promise<MintResponseData | any> => {
   try {
@@ -218,21 +183,41 @@ export const approveMarketPlace = async (contractInstance: any, marketPlaceAddr:
   return true;
 }
 
- 
+
+
 /**
- * 
- * @param marketPlaceInstance 
- * @param _nftAddress 
- * @param _tokenId 
- * @param _price 
+ * @param marketPlace contract instance of the marketplace 
+ * @param TokenId id of the token to be listed
+ * @param nftAddress  contract address of the nft collection
+ * @param basePrice initial prices set by the user 
+ * @returns  returnes object pertaining to listing event 
  */
-export const listNFT = async(marketPlaceInstance:any, _nftAddress: string, _tokenId: bigint, _price: bigint) => {
-  const trx = await marketPlaceInstance.listNft(_nftAddress, _tokenId, _price);
-  const receipt = await trx.wait(); // for for transacition to be minded 
-  if (!receipt) {
-    console.log("----- Listing is reverted ---->>")
+export const listToken = async (marketPlace: any, TokenId: bigint, nftAddress: string, basePrice: bigint) => {
+  try {
+    // listing token 
+    const trx = await marketPlace.listNft(nftAddress, TokenId, basePrice);
+    const receipt = await trx.wait();
+
+    // search in receipt for tokenListed event 
+    for (const log of receipt.logs) {
+      const parsed =  marketPlace.interface.parseLog(log);
+      if (parsed && parsed.name === "TokenListed ") {
+        const [nftAddress, tokenId, basePrice, seller] = log.args
+
+        return {
+          success: true, 
+          tokenId: tokenId,
+          nftAddress: nftAddress,
+          basePrice: basePrice,
+          seller: seller
+        }
+      }
+    }
+  } catch (e: any) {
+    console.log("Error : ", e);
     return;
   }
-  // return receipt
-  return receipt;
+
 }
+ 
+

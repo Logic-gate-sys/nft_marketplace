@@ -53,7 +53,6 @@ export const fetchAbiFromEtherscan = async (address: string, chainId: number =11
     }
     else {
       try {
-    
         const url = `${etherscan_base_url}?&apikey=${ethescan_api_key}&chainid=${chainId}&module=contract&action=getabi&address=${address}`;
         const res = await fetch(url);
 

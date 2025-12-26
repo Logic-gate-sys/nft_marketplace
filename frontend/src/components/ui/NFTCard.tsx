@@ -2,27 +2,6 @@ import React from 'react';
 import { NFTCardProps } from '../../services/types';
 
 
-/**
- * 
-export interface NFTCardProps {
-  id:number,
-  tokenId: number | string;
-  image?: string | null;
-  contractAddress?: string;
-  price?: number | string | null;
-  lastPrice?: number | string | null;
-  isListed?: boolean;
-  context?: 'studio' | 'marketplace';
-  onClick?: () => void;
-  onBuy?: () => void;
-  onList?: () => void;
-  onUnlist?: () => void;
-  isFavorited?: boolean;
-  loading?: boolean;
-}
-
- */
-
 const NFTCard: React.FC<NFTCardProps> = ({
   id,
   tokenId,
