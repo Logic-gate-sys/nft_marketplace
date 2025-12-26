@@ -32,9 +32,10 @@ export const PriceModal: React.FC<PriceModalProps> = ({
   onClose,
 }) => {
   const [price, setPrice] = useState(currentPrice?.toString() || "");
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState({type:'', message:''});
   const [isloading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const { wallet, token, signer } = useAuth();
 
@@ -54,35 +55,40 @@ export const PriceModal: React.FC<PriceModalProps> = ({
 
   // listing
   const handleListing = async (e: React.FormEvent) => {
+    // prevent defualt submit behaviour
     e.preventDefault();
     setIsLoading(true);
     if (!price) {
-      setMessage("Price is not set , set to continue");
+      setStatus({type:'error', message:'Provide listing price to contiue'});
       setError(true)
       setIsLoading(false);
       return;
     }
+    
     // convert price to wei
     const price_in_wei = ethers.parseEther(price);
     console.log("PRICE IN WEI", price_in_wei);
 
     // approve marketPlace
     if (!nftAddress) {
-      console.log("No nft selected");
+      setStatus({ type: 'error', message: 'Failed to get nft address' });
+      setError(true);
       setIsLoading(false);
       return;
     }
 
     // signer , token and user validation
     if (!signer || !wallet || !token) {
-      console.log("Please connect wallet first ");
+      setStatus({ type: 'error', message: 'Dummy, connect wallet first !, haaha' });
+      setError(true);
       setIsLoading(false);
       return;
     }
     const nftABI = await fetchContractABI(nftAddress, token);
 
     if (!nftABI) {
-      console.log("Failed to load nft abi");
+      setStatus({ type: 'error', message: 'Failed to get nft ABI from etherscan' });
+      setError(true);
       setIsLoading(false);
       return;
     }
@@ -96,7 +102,8 @@ export const PriceModal: React.FC<PriceModalProps> = ({
     );
 
     if (!m_isapproved) {
-      console.log("Failed to approve market place");
+      setStatus({ type: 'error', message: 'NFT approval for marketplace failed' });
+      setError(true);
       setIsLoading(false);
       return;
     }
@@ -108,20 +115,24 @@ export const PriceModal: React.FC<PriceModalProps> = ({
     );
 
     // finally list token
-    const listResult = await listToken(
+    const listed = await listToken(
       marketPlace,
       BigInt(tokenId),
       nftAddress,
       price_in_wei
     );
-    if (!listResult) {
-      console.log("Error , listing did not return receipt");
+    console.log("Listing Result ======> ", listed);
+    if (!listed) {
+      setStatus({ type: 'error', message: 'Could not retrieve listing result' });
+      setError(true);
       setIsLoading(false);
       return;
     }
 
     // finally close
     setIsLoading(false);
+    setSuccess(true);
+    setStatus({type:'success', message:'Provide listing price to contiue'});
     onClose();
   };
 
@@ -218,10 +229,9 @@ export const PriceModal: React.FC<PriceModalProps> = ({
           </div>
         </form>
       </div>
-      {error && (
-        <PopupMessageBox message={error} onClose={() => setError("")} />
-      )}
-      {isloading && <Loader />}
+      {error && (<PopupMessageBox message={status?.message} type="error" onClose={() => setError(false)} />)}
+      {success && (<PopupMessageBox message={status?.message} type="success" onClose={() => setError(false)} />)}
+      {isloading && <Spinner />}
     </div>
   );
 };

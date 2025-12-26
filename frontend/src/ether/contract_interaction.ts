@@ -199,20 +199,13 @@ export const listToken = async (marketPlace: any, TokenId: bigint, nftAddress: s
     const receipt = await trx.wait();
 
     // search in receipt for tokenListed event 
-    for (const log of receipt.logs) {
-      const parsed =  marketPlace.interface.parseLog(log);
-      if (parsed && parsed.name === "TokenListed ") {
-        const [nftAddress, tokenId, basePrice, seller] = log.args
-
-        return {
-          success: true, 
-          tokenId: tokenId,
-          nftAddress: nftAddress,
-          basePrice: basePrice,
-          seller: seller
-        }
-      }
+    console.log("Listing transaction receipt: ", receipt);
+    if (receipt.status !== 1) {
+      return false
     }
+     
+    // return true
+    return true;
   } catch (e: any) {
     console.log("Error : ", e);
     return;
