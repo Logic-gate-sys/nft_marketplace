@@ -20,7 +20,7 @@ provider.getNetwork().then(network => {
     console.log(`Provider is connected to network ${network.name} with chain id ${network.chainId}`);
 })
 
-const MARKETPLACE_SEPOLIA_ADDRESS = '0xc0075218c9500aB3c88E8C3308b5F4526cFcF933'
+const MARKETPLACE_SEPOLIA_ADDRESS = '0xcBd9450dF1d8d8eDDCb2D2870bE70003ab7E8B7b'
 
 
  const MARKETPLACE_SEPOLIA_ABI = [
