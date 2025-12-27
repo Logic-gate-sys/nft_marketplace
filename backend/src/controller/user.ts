@@ -59,6 +59,7 @@ export async function login(req: Request, res: Response) {
       wallet: wallet
     }
   });
+  // if use does not exist
   if (!user) {
     return res.json({ error: "Invalid wallet" }).status(404);
   }

@@ -8,7 +8,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
   image,
   price,
   lastPrice,
-  isListed = false,
+  isListed = true,
   context = 'marketplace',
   col_name,
   onClick,

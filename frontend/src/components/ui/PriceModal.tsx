@@ -15,6 +15,9 @@ import {
 } from "../../../../shared/constants/contracts";
 import { Loader, Spinner, PopupMessageBox } from "../index";
 
+
+
+
 // **NEW: Price Modal Component**
 interface PriceModalProps {
   isOpen: boolean;
@@ -32,7 +35,7 @@ export const PriceModal: React.FC<PriceModalProps> = ({
   onClose,
 }) => {
   const [price, setPrice] = useState(currentPrice?.toString() || "");
-  const [status, setStatus] = useState({type:'', message:''});
+  const [status, setStatus] = useState({ type: "", message: "" });
   const [isloading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -59,19 +62,19 @@ export const PriceModal: React.FC<PriceModalProps> = ({
     e.preventDefault();
     setIsLoading(true);
     if (!price) {
-      setStatus({type:'error', message:'Provide listing price to contiue'});
-      setError(true)
+      setStatus({ type: "error", message: "Provide listing price to contiue" });
+      setError(true);
       setIsLoading(false);
       return;
     }
-    
+
     // convert price to wei
     const price_in_wei = ethers.parseEther(price);
     console.log("PRICE IN WEI", price_in_wei);
 
     // approve marketPlace
     if (!nftAddress) {
-      setStatus({ type: 'error', message: 'Failed to get nft address' });
+      setStatus({ type: "error", message: "Failed to get nft address" });
       setError(true);
       setIsLoading(false);
       return;
@@ -79,7 +82,10 @@ export const PriceModal: React.FC<PriceModalProps> = ({
 
     // signer , token and user validation
     if (!signer || !wallet || !token) {
-      setStatus({ type: 'error', message: 'Dummy, connect wallet first !, haaha' });
+      setStatus({
+        type: "error",
+        message: "Dummy, connect wallet first !, haaha",
+      });
       setError(true);
       setIsLoading(false);
       return;
@@ -87,7 +93,10 @@ export const PriceModal: React.FC<PriceModalProps> = ({
     const nftABI = await fetchContractABI(nftAddress, token);
 
     if (!nftABI) {
-      setStatus({ type: 'error', message: 'Failed to get nft ABI from etherscan' });
+      setStatus({
+        type: "error",
+        message: "Failed to get nft ABI from etherscan",
+      });
       setError(true);
       setIsLoading(false);
       return;
@@ -102,7 +111,10 @@ export const PriceModal: React.FC<PriceModalProps> = ({
     );
 
     if (!m_isapproved) {
-      setStatus({ type: 'error', message: 'NFT approval for marketplace failed' });
+      setStatus({
+        type: "error",
+        message: "NFT approval for marketplace failed",
+      });
       setError(true);
       setIsLoading(false);
       return;
@@ -123,7 +135,10 @@ export const PriceModal: React.FC<PriceModalProps> = ({
     );
     console.log("Listing Result ======> ", listed);
     if (!listed) {
-      setStatus({ type: 'error', message: 'Could not retrieve listing result' });
+      setStatus({
+        type: "error",
+        message: "Could not retrieve listing result",
+      });
       setError(true);
       setIsLoading(false);
       return;
@@ -132,7 +147,7 @@ export const PriceModal: React.FC<PriceModalProps> = ({
     // finally close
     setIsLoading(false);
     setSuccess(true);
-    setStatus({type:'success', message:'Provide listing price to contiue'});
+    setStatus({ type: "success", message: "Provide listing price to contiue" });
     onClose();
   };
 
@@ -229,8 +244,20 @@ export const PriceModal: React.FC<PriceModalProps> = ({
           </div>
         </form>
       </div>
-      {error && (<PopupMessageBox message={status?.message} type="error" onClose={() => setError(false)} />)}
-      {success && (<PopupMessageBox message={status?.message} type="success" onClose={() => setError(false)} />)}
+      {error && (
+        <PopupMessageBox
+          message={status?.message}
+          type="error"
+          onClose={() => setError(false)}
+        />
+      )}
+      {success && (
+        <PopupMessageBox
+          message={status?.message}
+          type="success"
+          onClose={() => setError(false)}
+        />
+      )}
       {isloading && <Spinner />}
     </div>
   );
