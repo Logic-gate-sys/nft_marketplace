@@ -14,13 +14,10 @@ export async function createUser(req:Request, res:Response) {
 
   try {
     // Create user with Prisma Client, conditionally include optional fields
-    const alreadyExist = await prisma.user.findUnique({
-      where: { wallet: wallet }
-    }) ? true : false;
+    const alreadyExist = await prisma.user.findUnique({ where: {   wallet: wallet } }) ? true : false;
+
     if (alreadyExist) {
-      return res.status(409).json(
-        { error: "User aleardy exist" }
-      )
+      return res.status(400).json({ success: false, message: "User with wallet already exists, login" });
     }
     const new_user = await prisma.user.create({
       data: {
