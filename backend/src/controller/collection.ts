@@ -18,8 +18,7 @@ import { urlToHttpOptions } from 'node:url';
 import nftRouter from '@/route/nftRoute';
 import { decode } from 'node:punycode';
 
-// coverImage: null,
-// logoImage: null,
+
 
 // creacte collection
 export const create_offchain_collection = async (
@@ -37,7 +36,7 @@ export const create_offchain_collection = async (
     category,
     royalties,
   } = req.body;
-  //------------ for On-chain there is no need for ipfs
+  //------ for On-chain there is no need for ipfs
   // file
   const files = req.files as Express.Multer.File[];
   if (!files) {

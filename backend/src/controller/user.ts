@@ -21,7 +21,7 @@ export async function createUser(req:Request, res:Response) {
     }
     const new_user = await prisma.user.create({
       data: {
-        wallet: wallet,
+        wallet: wallet
       },
     });
 
