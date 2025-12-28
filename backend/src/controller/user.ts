@@ -17,7 +17,7 @@ export async function createUser(req:Request, res:Response) {
     const alreadyExist = await prisma.user.findUnique({ where: {   wallet: wallet } }) ? true : false;
 
     if (alreadyExist) {
-      return res.status(400).json({ success: false, message: "User with wallet already exists, login" });
+      return res.status(409).json({ success: false, message: "User with wallet already exists, login" });
     }
     const new_user = await prisma.user.create({
       data: {

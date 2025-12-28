@@ -27,8 +27,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signer: Signer,
     provider: Provider,
     readProvider: Provider,
-    user?: any,
-    token?: string
+    token: string,
+    user: any,
+    
   ) => {
     signerRef.current = signer;
     providerRef.current = provider;

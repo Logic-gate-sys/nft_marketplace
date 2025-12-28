@@ -36,7 +36,7 @@ export const create_offchain_collection = async (
     category,
     royalties,
   } = req.body;
-  //------ for On-chain there is no need for ipfs
+  //--------- for On-chain there is no need for ipfs
   // file
   const files = req.files as Express.Multer.File[];
   if (!files) {
@@ -134,14 +134,14 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
     }
 
     // OrderBy clause
-    let orderBy: any = { create_at: 'desc' };
-    if (sortBy === 'oldest') orderBy = { create_at: 'asc' };
+    let orderBy: any = { createdAt: 'desc' };
+    if (sortBy === 'oldest') orderBy = { createdAt: 'asc' };
 
     // Fetch collections with NFTs and counts
     const collections = await prisma.collection.findMany({
       where: whereClause,
       include: {
-        _count: { select: { Nft: true, Listings: true } },
+        _count: { select: { Nft: true } },
         User: { select: { id: true, username: true, wallet: true } },
         Nft: {
           include: {
@@ -221,14 +221,14 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
           category: meta.category ?? 'other',
           contractAddress: meta.contractAddress ?? '',
           items: col._count.Nft,
-          listedItems: col._count.Listings,
+          // listedItems: col._count.Listings,
           nfts: transformedNfts,
           floorPrice: 0,
           volume: 0,
           creator: col.User.wallet,
           creatorName: col.User.username ?? 'Unnamed',
           creatorId: col.User.id,
-          createdAt: col.create_at,
+          createdAt: col.createdAt,
         };
       })
     );
@@ -282,7 +282,7 @@ export const fetchUserCollections = async (req: any, res: Response) => {
     const collections = await prisma.collection.findMany({
       where: { user_id: userId },
       include: {
-        _count: { select: { Nft: true, Listings: true } },
+        _count: { select: { Nft: true} },
         User: { select: { id: true, username: true, wallet: true } },
         Nft: {
           include: {
@@ -298,7 +298,7 @@ export const fetchUserCollections = async (req: any, res: Response) => {
       },
       skip,
       take,
-      orderBy: { create_at: 'asc' },
+      orderBy: { createdAt: 'asc' },
     });
 
     const totalCollections = await prisma.collection.count({
@@ -360,14 +360,13 @@ export const fetchUserCollections = async (req: any, res: Response) => {
           category: meta.category ?? 'other',
           contractAddress: meta.contractAddress ?? '',
           items: col._count.Nft,
-          listedItems: col._count.Listings,
           nfts: transformedNfts,
           floorPrice: 0,
           volume: 0,
           creator: col.User.wallet,
           creatorName: col.User.username ?? 'Unnamed',
           creatorId: col.User.id,
-          createdAt: col.create_at,
+          createdAt: col.createdAt,
         };
       })
     );
@@ -408,7 +407,6 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
         _count: {
           select: {
             Nft: true,
-            Listings: true,
           },
         },
         Nft: {
@@ -493,14 +491,13 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
       category: meta.category ?? 'other',
       contractAddress: meta.contractAddress ?? '',
       items: collection._count.Nft,
-      listedItems: collection._count.Listings,
       nfts: transformedNfts,
       floorPrice: 0,
       volume: 0,
       creator: collection.User.wallet,
       creatorName: collection.User.username ?? 'Unnamed',
       creatorId: collection.User.id,
-      createdAt: collection.create_at,
+      createdAt: collection.createdAt,
     };
 
     return res.json({
