@@ -1,36 +1,33 @@
-generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-}
 
-datasource db {
-  provider = "postgresql"
-}
 
+// ------------------------- SCHEMA ------------------------------------------
 model User {
   id          Int          @id @default(autoincrement())
-  wallet      String       @unique
   user_name   String?
   email       String?
+  wallet      String       @unique
   created_at  DateTime     @default(now())
+
+
   collections Collection[]
   nfts        Nft[]
-  bought      Sold[]       @relation("Buyer_User")
-  sold        Sold[]       @relation("Seller_User")
+  sold        Sold[]
 }
 
 model Collection {
   id        Int      @id @default(autoincrement())
   user_id   Int
-  col_uri   String
   address   String?
+  col_uri   String
   createdAt DateTime @default(now())
+
+
   user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   nfts      Nft[]
 }
 
 model Nft {
-  id            Int        @id @default(autoincrement())
+  id            Int        @id @unique @default(autoincrement())
   token_id      Int
   col_id        Int
   uri           String
@@ -39,17 +36,21 @@ model Nft {
   current_price String?
   status        String     @default("unlisted")
   createdAt     DateTime   @default(now())
+
+
   collection    Collection @relation(fields: [col_id], references: [id], onDelete: Cascade)
   owner         User       @relation(fields: [owner_id], references: [id], onDelete: Cascade)
 }
 
+
 model Sold {
-  id        Int      @id @default(autoincrement())
-  token_id  Int
-  buyer_id  Int
-  seller_id Int
-  price     String
-  soldAt    DateTime @default(now())
-  buyer     User     @relation("Buyer_User", fields: [buyer_id], references: [id], onDelete: Cascade)
-  seller    User     @relation("Seller_User", fields: [seller_id], references: [id], onDelete: Cascade)
+  id       Int      @id @unique @default(autoincrement())
+  token_id Int
+  from     String
+  to       String
+  price    Decimal
+  soldAt   DateTime @default(now())
+
+  
+  buyer    User     @relation(fields: [from], references: [wallet], onDelete: Cascade)
 }
