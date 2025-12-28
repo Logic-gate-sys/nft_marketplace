@@ -10,9 +10,11 @@ datasource db {
 model User {
   id          Int          @id @default(autoincrement())
   wallet      String       @unique
-  user_name   String?
+  username   String?
   email       String?
   created_at  DateTime     @default(now())
+
+  // relations
   collections Collection[]
   nfts        Nft[]
   bought      Sold[]       @relation("Buyer_User")
@@ -25,8 +27,10 @@ model Collection {
   col_uri   String
   address   String?
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  nfts      Nft[]
+
+  // relations
+  User      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  Nft      Nft[]
 }
 
 model Nft {
@@ -39,8 +43,10 @@ model Nft {
   current_price String?
   status        String     @default("unlisted")
   createdAt     DateTime   @default(now())
+
+  //relations
   collection    Collection @relation(fields: [col_id], references: [id], onDelete: Cascade)
-  owner         User       @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  User         User       @relation(fields: [owner_id], references: [id], onDelete: Cascade)
 }
 
 model Sold {
