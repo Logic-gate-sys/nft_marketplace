@@ -222,7 +222,6 @@ const Explore: React.FC = () => {
                   context="marketplace"
                   loading={false}
                   onClick={() => handleNFTClick(nft.id)}
-                  onFavorite={() => console.log('Favorite NFT:', nft.id)}
                   onBuy={() => console.log('Buy NFT:', nft.id)}
                 />
               ))}

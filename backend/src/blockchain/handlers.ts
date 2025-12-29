@@ -52,7 +52,6 @@ export const handleListing = async (
   nftAddress: string,
   tokenId: bigint,
   basePrice: bigint,
-  seller: string
 ) => {
   try {
     // Verify chain state
@@ -73,43 +72,43 @@ export const handleListing = async (
     console.log("TOKEN ID : ", Number(tokenId));
     console.log("URI : ", tokenURI);
 
-    const nft = await prisma.nft.findFirst({
+    // update 
+    await prisma.nft.update({
       where: {
-        token_id: Number(tokenId),
-        uri: tokenURI,
+        uri: tokenURI
       },
-    });
-    if (!nft) {
-      console.log('Could not find nft');
-      return;
-    }
-      const collection_id = nft.col_id;
+      data: {
+        base_price: ethers.formatEther(basePrice),
+        current_price:ethers.formatEther(currentPrice),
+        status: "listed"
+      }
+    }); 
 
-    // Mirror EXACT chain state into DB
-    await prisma.listings.upsert({
-      where: {
-            col_id_token_id: {
-              col_id: collection_id,
-              token_id: Number(tokenId)
-            },
-      },
-      // if record exists
-      update: {
-        seller: seller,
-        base_price: basePrice,
-        current_price: currentPrice,
-      },
-      // if record is new
-      create: {
-        col_id: collection_id,
-        token_id: Number(tokenId),
-        seller: seller,
-        base_price: basePrice,
-      },
-    });
-
-    console.log('Listing synced:', nftAddress, tokenId.toString());
-  } catch (err) {
-    console.error('Listing sync failed:', err);
+  } catch (err: any) {
+    console.log("Error", err);
   }
 };
+
+
+
+export const handleListingCancelling = async (
+  nftAddress: string,
+  tokenId: bigint) => {
+  
+  // go  fetch token uri
+  const tokenURI = await getTokenURI(nftAddress, provider, tokenId);
+  if (!tokenURI) {
+    console.log("Failed to get token URI of token to be unlisted");
+    return;
+  }
+  await prisma.nft.update({
+    where: {
+      uri: tokenURI,
+    },
+    data: {
+      base_price: null,
+      current_price: null,
+      status:"unlisted"
+    }
+  })
+}

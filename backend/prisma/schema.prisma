@@ -37,7 +37,7 @@ model Nft {
   id            Int        @id @default(autoincrement())
   token_id      Int
   col_id        Int
-  uri           String
+  uri           String    @unique
   owner_id      Int
   base_price    String?
   current_price String?

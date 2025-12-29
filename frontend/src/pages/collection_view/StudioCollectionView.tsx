@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from "react";
 import { PriceModal } from "../../components/ui/PriceModal";
 
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { getWriteContractInstance, UnlistToken } from "../../ether/contract_interaction";
+import { MARKETPLACE_SEPOLIA_ABI, MARKETPLACE_SEPOLIA_ADDRESS } from "../../../../shared/constants/contracts";
 import {
   NFTCard,
   CardGrid,
@@ -12,6 +14,7 @@ import {
 import type { Tab } from "../../components/sections/TabNavigation";
 import { FetchedCollection } from "../../services/types";
 import { fetchCollectionById } from "../../utils/fetchCollections";
+import { useAuth } from "../../context/AuthContext";
 
 const StudioCollectionView: React.FC = () => {
   //dynamic collection url id
@@ -32,6 +35,7 @@ const StudioCollectionView: React.FC = () => {
   // **NEW: Modal State**
   const [priceModalOpen, setPriceModalOpen] = useState(false);
   const [selectedNft, setSelectedNft] = useState<any | null>(null);
+  const { signer } = useAuth();
 
   // Determine context from route
   const isStudioContext = location.pathname.includes("/studio/collection");
@@ -135,6 +139,38 @@ const StudioCollectionView: React.FC = () => {
     setPriceModalOpen(true);
   };
 
+
+  const handleUnlist = async () => {
+    
+    // stat loadding 
+    setLoading(true);
+    if (!signer) {
+      setLoading(false);
+      setError("Connect wallet first , dummy!");
+      return;
+    }
+    // wallet instance 
+    const marketPlace_i = getWriteContractInstance(MARKETPLACE_SEPOLIA_ADDRESS, MARKETPLACE_SEPOLIA_ABI, signer);
+    if (!collection) {
+      setLoading(false);
+      setError("No collection selected ");
+      return;
+    }
+    if (!selectedNft) {
+      setLoading(false);
+      setError("No NFT Selected")
+      return;
+    }
+    const isUnlisted = await UnlistToken(marketPlace_i, selectedNft.tokenId, collection?.contractAddress);
+    if (!isUnlisted) {
+      setLoading(false);
+      setError("Failed to unlist NFT");
+      return;
+    }
+
+   
+    setLoading(false);
+  }
 
   // Loading state
   if (loading) {
@@ -418,10 +454,13 @@ const StudioCollectionView: React.FC = () => {
                     col_name={collection.name}
                     id={nft.id}
                     image={nft.uri}
-                    price={nft.price}
-                    isListed={nft.isListed}
+                    price={nft?.currentPrice}
+                    lastPrice={nft?.basePrice}
+                    status={nft?.status }
                     context={isStudioContext ? "studio" : "marketplace"}
                     loading={false}
+                    onUnlist = {
+                      handleUnlist}
                     onList={
                       isStudioContext && !nft.isListed
                         ?()=> handleSelection(nft)

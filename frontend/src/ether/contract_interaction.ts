@@ -212,5 +212,28 @@ export const listToken = async (marketPlace: any, TokenId: bigint, nftAddress: s
   }
 
 }
- 
+
+
+  
+
+export const UnlistToken =async (marketPlace: any, TokenId: bigint, nftAddress: string) => {
+  try {
+    // listing token 
+    const trx = await marketPlace.cancelListing(nftAddress, TokenId);
+    const receipt = await trx.wait();
+
+    // search in receipt for tokenListed event 
+    console.log("Listing transaction receipt: ", receipt);
+    if (receipt.status !== 1) {
+      return false
+    }
+     
+    // return true
+    return true;
+  } catch (e: any) {
+    console.log("Error : ", e);
+    return;
+  }
+
+}
 

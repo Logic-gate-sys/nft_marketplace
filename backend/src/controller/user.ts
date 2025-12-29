@@ -25,9 +25,6 @@ export async function createUser(req:Request, res:Response) {
       },
     });
 
-    if (!new_user) {
-      return res.json({ error: "Could not create user with such wallet addresss!" })
-    };
     // Send success response
     return res.status(201).json({
       sucess: true,
