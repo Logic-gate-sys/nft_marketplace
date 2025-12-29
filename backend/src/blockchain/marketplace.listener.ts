@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { handleListing } from './handlers';
+import { handleListing , handleListingCancelling} from './handlers';
 import { JsonRpcProvider } from "ethers";
 
 
@@ -1024,20 +1024,34 @@ export const startMarketPlaceListeners = async () => {
     console.log("Market place event listener started ");
 
     // token list handler
-    marketplace_contract.on(
-        "TokenListed",
-        async (seller, nftAddress, tokenId, basePrice, event) => {
-            try {
-                // handling listing 
-                await handleListing(marketplace_contract, seller, nftAddress, tokenId, basePrice)
-            } catch (e: any) {
-                console.log("Error: ", e);
-                return;
-            }
-        }
+  marketplace_contract.on(
+    "TokenListed",
+    async (seller, nftAddress, tokenId, basePrice, event) => {
+      try {
+        // handling listing 
+        await handleListing(marketplace_contract, nftAddress, tokenId, basePrice)
+      } catch (e: any) {
+        console.log("Error: ", e);
+        return;
+      }
+    }
         
-    )
+  );
+
+  // -------- Cancelling listing -
+  marketplace_contract.on("ListingCancelled", async (nftAddress, tokenId, sender, event) => {
+    try {
+      await handleListingCancelling(nftAddress, tokenId);
+    } catch (e: any) {
+      console.log("Error: ", e);
+        return;
+    }
+    
+  });
+
+  
 }
+
 
 
 
