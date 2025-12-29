@@ -1026,7 +1026,7 @@ export const startMarketPlaceListeners = async () => {
     // token list handler
   marketplace_contract.on(
     "TokenListed",
-    async (seller, nftAddress, tokenId, basePrice, event) => {
+    async ( nftAddress, tokenId, basePrice,seller, event) => {
       try {
         // handling listing 
         await handleListing(marketplace_contract, nftAddress, tokenId, basePrice)
