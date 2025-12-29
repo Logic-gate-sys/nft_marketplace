@@ -53,7 +53,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
           <img
             src={image}
             alt={col_name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-fit object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
         ) : (

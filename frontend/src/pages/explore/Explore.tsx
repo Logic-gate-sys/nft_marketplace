@@ -1,19 +1,48 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fetchAllCollections } from '../../utils/fetchCollections';
 import { 
   NFTCard, 
   CardGrid,
   SectionHeader,
 } from '../../components';
-import { CollectionsCarousel } from '../../components/carousel/ColCarousel';
-import { collections, nfts } from '../../data/sampledata';
 
 const Explore: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [collections, setCollection] = useState<any>();
+  const [nfts, setNfts] = useState<any>();
+
+  //fetch all collections
+  useEffect(() => {
+    
+    const fetchCollections = async () => {
+      const { collections, pagination } = await fetchAllCollections();
+      if (!collections) {
+        console.log("Failed to fetch all collections");
+        return
+      }
+      // set collection
+      setCollection(collections);
+      // also nfts
+      const nfts = collections.flatMap(col => col?.nfts ?? []);
+      if (nfts.length < 0 ) {
+        console.log("No nft found")
+        return;
+      }
+
+      setNfts(nfts);
+    }
+
+    fetchCollections();
+    }, [nfts, collections]);
+
   // Get trending NFTs (listed NFTs only)
-  const trendingNFTs = nfts.filter(nft => nft.isListed).slice(0, 10);
+  if (!nfts) {
+    return;
+  }
+  const trendingNFTs = nfts.filter(nft => nft.status==='listed').slice(0, 10);
 
   // Get featured collections (sorted by volume)
   const featuredCollections = [...collections]
@@ -173,25 +202,6 @@ const Explore: React.FC = () => {
               }
             />
           </div>
-          
-          {/* Carousel - Full Bleed with Internal Padding */}
-          {/* {collections && collections.length > 0 ? (
-            <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
-              <CollectionsCarousel 
-                collections={collections} 
-                onCollectionClick={handleCollectionClick}
-              />
-            </div>
-          ) : (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center py-12 bg-os-bg-secondary/50 backdrop-blur-xl border border-white/10 rounded-2xl">
-                <svg className="w-16 h-16 text-os-text-tertiary mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-                <p className="text-os-text-secondary">No collections available at the moment</p>
-              </div>
-            </div>
-          )} */}
         </section>
 
         {/* Trending NFT Gifts */}
@@ -217,10 +227,16 @@ const Explore: React.FC = () => {
             <CardGrid cols={{ sm: 3, md: 3, lg: 4, xl: 5 }}>
               {trendingNFTs.map((nft) => (
                 <NFTCard
-                  key={nft.id}
-                  {...nft}
-                  context="marketplace"
-                  loading={false}
+                 key={nft.id}
+                    tokenId={nft?.tokenId}
+                    col_name={collections.name}
+                    id={nft.id}
+                    image={nft.uri}
+                    price={nft?.currentPrice}
+                    lastPrice={nft?.basePrice}
+                    status={nft?.status }
+                    context={ "marketplace"}
+                    loading={false}
                   onClick={() => handleNFTClick(nft.id)}
                   onBuy={() => console.log('Buy NFT:', nft.id)}
                 />
