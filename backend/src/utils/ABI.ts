@@ -3,8 +3,8 @@ import { TTLCache } from '@isaacs/ttlcache';
 const etherscan_base_url = process.env.ETHERSCAN_BASE_URL;
 const ethescan_api_key = process.env.ETHERSCAN_API_KEY
 
-const cache = new TTLCache({
-    max: 50, // 12 hourse TTL
+export const cache = new TTLCache({
+    max: 550, // 12 hourse TTL
     ttl: 12 * 60 *60 * 1000,
     checkAgeOnGet: true
 })
@@ -17,7 +17,7 @@ const cache = new TTLCache({
  * @summary Set abi as a TTL node memory cache
  */
 export const setABI = (address:string, abi:any[]) => {
-    cache.set(address, abi);
+    cache.set(address, abi,{ttl: 12204 * 60*60*1000});
 }
 
 /**
