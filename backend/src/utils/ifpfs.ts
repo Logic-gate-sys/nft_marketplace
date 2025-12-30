@@ -1,5 +1,11 @@
 import { pinata } from '../config/config';
 
+
+//GATE WAYS
+const CURRENT_IPFSGATEWAY = 'https://dweb.link/ipfs/';
+const CURRENT_IPFSGATEWA = 'https://gateway.pinata.cloud/ipfs/';
+const GATE_IPFS = 'https://ipfs.io/ipfs/';
+
 //-----------------------  Define the argument types ------------------------------
 export const uploadImageToPinata = async (
   blobBody: any,
@@ -100,15 +106,6 @@ export const uploadCollectionMetaData = async (
   }
 };
 
-/**
- * nft_id    Int    @id @default(autoincrement())
-  token_id  String
-  col_id    Int
-  nft_uri   String?
-  name      String
-  owner_id  String
-
- */
 export const upload_nftMetaData_pinata = async (image:string, attributes: any) => {
   const metaData = { image: image, attributes: attributes};
   try {
@@ -128,12 +125,11 @@ export const upload_nftMetaData_pinata = async (image:string, attributes: any) =
   }
 };
 
-
 // Convert ipfs:// URI to HTTP URL
 export const ipfsToHttp = (ipfsUri: string) => {
   // Remove ipfs:// and add /ipfs/ path
   const hash = ipfsUri.replace("ipfs://", "");
-  return `https://coffee-permanent-aardwolf-723.mypinata.cloud/ipfs/${hash}`;
+  return `${CURRENT_IPFSGATEWAY}${hash}`;
 }
 
 // Fetch metadata from IPFS
@@ -151,7 +147,7 @@ export const fetchIpfsMetadata = async (ipfsUri: string) => {
 
 // Convert CID to HTTP URL
 export const ipfsCIDToHttp = (cid: string) => {
-  return `https://coffee-permanent-aardwolf-723.mypinata.cloud/ipfs/${cid}`;
+  return `${CURRENT_IPFSGATEWAY}${cid}`;
 }
 
 type RawMetadata = {
@@ -166,7 +162,6 @@ type RawMetadata = {
 };
 
 export function formatCollectionMetadata(meta: RawMetadata) {
-  const IPFS_GATEWAY = "https://coffee-permanent-aardwolf-723.mypinata.cloud";
   
   // Helper to convert IPFS hash/CID to HTTP URL
   const toHttp = (cid?: string) => {
@@ -178,7 +173,7 @@ export function formatCollectionMetadata(meta: RawMetadata) {
     // Remove ipfs:// if present
     const hash = cid.replace('ipfs://', '');
     
-    return `${IPFS_GATEWAY}/ipfs/${hash}`;
+    return `${CURRENT_IPFSGATEWAY}/${hash}`;
   };
 
   return {
@@ -192,7 +187,6 @@ export function formatCollectionMetadata(meta: RawMetadata) {
     logo: toHttp(meta.logo),
   };
 }
-
 
 // onchain image and metadata extraction 
 export const decodeOnChainTokenURI = (tokenURI: string) => {

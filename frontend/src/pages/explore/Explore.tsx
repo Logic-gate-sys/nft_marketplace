@@ -36,7 +36,7 @@ const Explore: React.FC = () => {
     }
 
     fetchCollections();
-    }, [nfts, collections]);
+    }, []);
 
   // Get trending NFTs (listed NFTs only)
   if (!nfts) {

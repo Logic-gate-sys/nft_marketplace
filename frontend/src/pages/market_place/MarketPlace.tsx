@@ -100,6 +100,7 @@ const MarketPlace: React.FC = () => {
 
           <div className="pt-4 pb-4">
             <FilterBar
+              key={activeCategory}
               filters={categories}
               activeFilter={activeCategory}
               onFilterChange={setActiveCategory}
