@@ -5,8 +5,7 @@
   "main": ".eslintrc.js",
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--use-system-ca nodemon --trace-warnings --exec tsx src/server.ts",
-    "start": "node --use-system-ca ./node_modules/tsx/dist/cli.js src/server.ts",
-    "build": "tsc",
+     "start": "tsx src/server.ts",
     "start_prod": "tsx src/server.ts"
   },
   "keywords": [],
@@ -17,7 +16,8 @@
     "@types/node": "^24.10.2",
     "@types/pg": "^8.15.6",
     "cross-env": "^10.1.0",
-    "nodemon": "^3.1.11"
+    "nodemon": "^3.1.11",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@isaacs/ttlcache": "^2.1.3",
