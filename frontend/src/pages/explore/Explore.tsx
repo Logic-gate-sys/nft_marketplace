@@ -5,14 +5,28 @@ import {
   NFTCard, 
   CardGrid,
   SectionHeader,
+  PopupMessageBox,
+  Loader,
+  Spinner,
 } from '../../components';
+import { getWriteContractInstance , BuyToken} from '../../ether/contract_interaction';
+import { MARKETPLACE_SEPOLIA_ABI, MARKETPLACE_SEPOLIA_ADDRESS } from '../../../../shared/constants/contracts';
+import { useAuth } from '../../context/AuthContext';
 
 const Explore: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-
+  const [status, setStatus] = useState({ type: "", message: "" });
+  const [isloading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [collections, setCollection] = useState<any>();
   const [nfts, setNfts] = useState<any>();
+  const [selectedNft, setSelectedNft] = useState<any>();
+
+  // aut contrext 
+  const { wallet, signer } = useAuth();
+
 
   //fetch all collections
   useEffect(() => {
@@ -26,15 +40,15 @@ const Explore: React.FC = () => {
       // set collection
       setCollection(collections);
       // also nfts
-      const nfts = collections.flatMap(col => col?.nfts ?? []);
-      if (nfts.length < 0 ) {
+      const nfts = collections.flatMap(col => (col?.nfts ?? []).map(nft => ({...nft, col_name: col.name, contractAddress:col.contractAddress}))
+      );
+      if (nfts.length === 0 ) {
         console.log("No nft found")
         return;
       }
 
       setNfts(nfts);
     }
-
     fetchCollections();
     }, []);
 
@@ -60,9 +74,48 @@ const Explore: React.FC = () => {
     navigate(`/collection/${collectionId}`);
   };
 
-  const handleNFTClick = (nftId: number) => {
-    navigate(`/nft/${nftId}`);
+  // const 
+  const handleNFTClick = (nft: any) => {
+    setSelectedNft(nft);
   };
+
+  const handleNFTBuying = async () => {
+    // setLoading 
+    setIsLoading(true);
+    if (!signer) {
+      setIsLoading(false);
+      setError(true);
+      setStatus({ type: 'error', message: 'Dummy, connect wallet first' });
+      return;
+    }
+    const marketPlace = getWriteContractInstance(MARKETPLACE_SEPOLIA_ADDRESS, MARKETPLACE_SEPOLIA_ABI, signer);
+    if (!marketPlace) {
+      setIsLoading(false);
+      setError(true);
+      setStatus({ type: 'error', message: 'Something went wrong , please try again later ' });
+      return;
+    }
+    // marketconrant instance 
+    if (!selectedNft) {
+      setIsLoading(false);
+      setError(true);
+      setStatus({ type: 'error', message: 'Dummy, select an nft in order to buy' });
+      return;
+    }
+    console.log("SELECTED NFT ADDRESS : ", selectedNft);
+    const sold = await BuyToken(marketPlace, selectedNft.contractAddress, selectedNft.tokenId);
+    if (!sold) {
+      setIsLoading(false);
+      setError(true);
+      setStatus({ type: 'error', message: 'Failed to buy nft' });
+      return;
+    }
+
+    // finally
+    setIsLoading(false);
+      setSuccess(true);
+      setStatus({ type: 'success', message: 'Got it , Nft bought successfully' });
+  }
 
   return (
     <div className="min-h-screen bg-os-bg-primary">
@@ -228,17 +281,18 @@ const Explore: React.FC = () => {
               {trendingNFTs.map((nft) => (
                 <NFTCard
                  key={nft.id}
-                    tokenId={nft?.tokenId}
-                    col_name={collections.name}
+                  tokenId={nft?.tokenId}
+                  col_name={nft?.col_name}
+                  contractAddress={nft?.contractAddress}
                     id={nft.id}
                     image={nft.uri}
                     price={nft?.currentPrice}
                     lastPrice={nft?.basePrice}
                     status={nft?.status }
-                    context={ "marketplace"}
+                    context={"marketplace"}
                     loading={false}
-                  onClick={() => handleNFTClick(nft.id)}
-                  onBuy={() => console.log('Buy NFT:', nft.id)}
+                  onClick={() => handleNFTClick(nft)}
+                  onBuy={handleNFTBuying}
                 />
               ))}
             </CardGrid>
@@ -450,6 +504,8 @@ const Explore: React.FC = () => {
           </div>
         </section>
       </main>
+      {error && <PopupMessageBox  message={status.message} onClose={() => setError(false)}  type='error'/>}
+      {success && <PopupMessageBox message={status.message} onClose={() => setError(false)}  type='success'/>}
     </div>
   );
 };

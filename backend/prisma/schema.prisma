@@ -54,13 +54,14 @@ model Nft {
 model Sold {
   id        Int      @id @default(autoincrement())
   token_id  Int
-  buyer_id  Int
-  seller_id Int
+  buyer     String
+  seller    String
   price     String
-  soldAt    DateTime @default(now())
   changed   Boolean? @default(true)
+  soldAt    DateTime @default(now())
+
 
   //relations
-  buyer     User     @relation("Buyer_User", fields: [buyer_id], references: [id], onDelete: Cascade)
-  seller    User     @relation("Seller_User", fields: [seller_id], references: [id], onDelete: Cascade)
+  u_buyer     User     @relation("Buyer_User", fields: [buyer], references: [wallet], onDelete: Cascade)
+  u_seller    User     @relation("Seller_User", fields: [seller], references: [wallet], onDelete: Cascade)
 }

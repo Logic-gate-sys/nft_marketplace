@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { handleListing , handleListingCancelling} from './handlers';
 import { JsonRpcProvider } from "ethers";
+import { TokenExpiredError } from 'jsonwebtoken';
 
 
 
@@ -1046,6 +1047,11 @@ export const startMarketPlaceListeners = async () => {
         return;
     }
     
+  });
+
+   // ------------- Registering Buying -
+  marketplace_contract.on("NFTSold", async (nftAddress, tokenId, price, buyer, seller, newComputedPrice, event) => {
+     await handleBuy(nftAddress, tokenId, price, buyer, seller, newComputedPrice)
   });
 
   
