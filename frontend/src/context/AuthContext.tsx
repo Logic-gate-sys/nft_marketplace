@@ -1,5 +1,5 @@
 import { Provider, Signer } from 'ethers';
-import React, { useContext, createContext, useState, useRef } from 'react';
+import React, { useContext, createContext, useState, useRef , useMemo} from 'react';
 
 interface AuthContextType{
     user: any;
@@ -8,7 +8,7 @@ interface AuthContextType{
     readProvider: any;
     provider: Provider | null;
     signer: Signer | null;
-    connectWallet: ( wallet:string,signer:Signer, provider:Provider, user?:any, token?:string ) => void;
+    connectWallet: ( wallet:string,signer: Signer, provider:Provider,readProvider: Provider, token:string,  user:any ) => void;
 }
 
 const AuthContext = createContext<AuthContextType>(null!);
@@ -27,8 +27,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signer: Signer,
     provider: Provider,
     readProvider: Provider,
-    user?: any,
-    token?: string
+    token: string,
+    user: any,
+    
   ) => {
     signerRef.current = signer;
     providerRef.current = provider;
@@ -39,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(token ?? null);
   };
 
-  const value = React.useMemo(
+  const value = useMemo(
     () => ({
       wallet,
       user,

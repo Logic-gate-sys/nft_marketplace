@@ -58,6 +58,9 @@ export interface NFTCardProps {
   tokenId: number | string;
   image?: string | null;
   contractAddress?: string;
+  basePrice?: string;
+  currentPrice?: string;
+  status: String;
   price?: number | string | null;
   lastPrice?: number | string | null;
   isListed?: boolean;

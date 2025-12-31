@@ -1,8 +1,9 @@
-import { RestFilled } from "@ant-design/icons";
 import { useAuth } from "../context/AuthContext";
 
 //---------------------- function find user_ by wallet 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+
 export const login = async (wallet: string) => {
     const res = await fetch(
         `${BASE_URL}/users/login`,
@@ -27,34 +28,46 @@ export const login = async (wallet: string) => {
 
 
 //---------------------- create user ---------------------------
-type CreateUserResult = {
-    ok: boolean;
-    status: number | 201;
-    reason: string |'duplicate' |'bad_request' ;
-    user: any;
-}
+// type CreateUserResult = {
+//     ok: boolean;
+//     status: number | 201;
+//     reason: string |'duplicate' |'bad_request' ;
+//     user: any;
+// }
 
-export const createUser = async (wallet: string, email?: string, username?: string) :Promise<CreateUserResult> => {
-    const res = await fetch(
-        `${BASE_URL}/users`,
-        {
+export const createUser = async (wallet: string, email?: string, username?: string) => {
+    try {
+        const res = await fetch( `${BASE_URL}/users`,{
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body:JSON.stringify({ wallet: wallet })
+            headers: {
+                "Content-Type": "application/json",
+                "Accept":"application/json"
+            },
+                body: JSON.stringify({ wallet:wallet })
         });
-    // if status is bad
-    if (res.status === 409) {
-        return { ok:false, status: 409, reason: 'duplicate', user:null};
-    }
-    else if (!res.ok) {
-        console.error("User registeration failed");
-        return { ok:false, status: 401, reason: 'bad_request', user:null};;
-    }
+
+        
+        // if status is bad
+        if (res.status === 409) {
+            return { ok: false, status: 409, reason: 'duplicate', user: null };
+        }
+
+        // if res status is not okay
+        if (!res.ok) {
+            console.error("User registeration failed");
+            return { ok: false, status: res.status, reason: 'bad_request', user: null };;
+        }
     
-    const { user } = await res.json();
-    return { ok: true, status: 201, reason: 'success', user: user };
+        const { user } = await res.json();
+        return { ok: true, status: 201, reason: 'success', user: user };
+    } catch (err: any) {
+        console.log(err);
+    }
 }
 
+
+
+//  Refresh token
 export const refreshToken = async () => {
     const res = await fetch(`${BASE_URL}/api/users/token/refresh`, {
         method: "POST",

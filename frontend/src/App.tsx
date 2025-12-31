@@ -31,6 +31,10 @@ const App: React.FC = () => {
 
       // try creating user first :
       const res = await createUser(wallet);
+      if (!res) {
+        return;
+      }
+      console.log("Creating result : ", res);
       if (res.reason == "bad_request") {
         console.log("Could not create user !, bad request");
         return;
@@ -47,7 +51,7 @@ const App: React.FC = () => {
           }
         }
         // assign Auth details
-        connectWallet(wallet, signer, provider,readProvider,user, acessToken);
+        connectWallet(wallet, signer, provider,readProvider, acessToken, user);
         setConnected(true);
       }
       // safely return
