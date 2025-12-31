@@ -4,7 +4,7 @@
   "description": "",
   "main": ".eslintrc.js",
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--use-system-ca nodemon --exec tsx src/server.ts",
+    "dev": "cross-env NODE_OPTIONS=--use-system-ca nodemon --trace-warnings --exec tsx src/server.ts",
     "start": "node --use-system-ca ./node_modules/tsx/dist/cli.js src/server.ts",
     "build": "tsc",
     "start_prod": "tsx src/server.ts"

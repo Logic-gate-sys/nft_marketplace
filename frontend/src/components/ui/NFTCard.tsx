@@ -16,7 +16,6 @@ const NFTCard: React.FC<NFTCardProps> = ({
   onUnlist,
   loading = false,
 }) => {
-  console.log('NFT STATUS : ', status);
 
   if (loading) {
     return (
@@ -196,12 +195,9 @@ const NFTCard: React.FC<NFTCardProps> = ({
           </div>
 
           {/* Context-aware action buttons (unchanged logic) */}
-          {context === 'marketplace' && price != null && onBuy && (
+          {context === 'marketplace' && (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onBuy();
-              }}
+              onClick={onBuy}
               className="px-2.5 py-1 bg-opensea-blue hover:bg-opensea-blue-light text-white text-[11px] font-semibold rounded-md transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
             >
               Buy

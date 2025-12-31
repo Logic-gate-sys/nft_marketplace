@@ -211,10 +211,7 @@ export const listToken = async (marketPlace: any, TokenId: bigint, nftAddress: s
     return;
   }
 
-}
-
-
-  
+}  
 
 export const UnlistToken =async (marketPlace: any, TokenId: bigint, nftAddress: string) => {
   try {
@@ -235,5 +232,23 @@ export const UnlistToken =async (marketPlace: any, TokenId: bigint, nftAddress: 
     return;
   }
 
+}
+
+export const BuyToken = async (market: Contract, nftAddress: string, tokenId: bigint) => {
+  try {
+    const trx = await market.buyNft(nftAddress, tokenId);
+     const receipt = await trx.wait();
+
+    // search in receipt for tokenListed event 
+    console.log("Buying transaction  receipt: ", receipt);
+    if (receipt.status !== 1) {
+      return false
+    }
+    // return true
+    return true;
+  } catch (error: any) {
+    console.log(error);
+    return;
+  }
 }
 

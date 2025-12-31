@@ -1,8 +1,9 @@
 import { ethers } from "ethers";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   fetchContractABI,
   getWriteContractInstance,
+  UnlistToken,
 } from "../../ether/contract_interaction";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -15,14 +16,12 @@ import {
 } from "../../../../shared/constants/contracts";
 import { Loader, Spinner, PopupMessageBox } from "../index";
 
-
-
-
 // **NEW: Price Modal Component**
 interface PriceModalProps {
   isOpen: boolean;
   tokenId: number;
   nftAddress?: string;
+  listStatus?: "listed" | "unlisted" | undefined;
   currentPrice?: number;
   onClose: () => void;
 }
@@ -30,6 +29,7 @@ interface PriceModalProps {
 export const PriceModal: React.FC<PriceModalProps> = ({
   isOpen,
   nftAddress,
+  listStatus,
   tokenId,
   currentPrice,
   onClose,
@@ -41,6 +41,7 @@ export const PriceModal: React.FC<PriceModalProps> = ({
   const [success, setSuccess] = useState(false);
 
   const { wallet, token, signer } = useAuth();
+
 
   useEffect(() => {
     if (isOpen) {
@@ -147,10 +148,37 @@ export const PriceModal: React.FC<PriceModalProps> = ({
     // finally close
     setIsLoading(false);
     setSuccess(true);
-    setStatus({ type: "success", message: "Provide listing price to contiue" });
-    onClose();
+    setStatus({ type: "success", message: "Listing successful" });
   };
 
+  const handleUnlisting = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    if (!signer) {
+      setIsLoading(false);
+      setError(true);
+      setStatus({ type: "error", message: "Dummy, provide connect wallet first " });      return;
+    }
+    // marketplace contract 
+    const marketContract = getWriteContractInstance(MARKETPLACE_SEPOLIA_ADDRESS, MARKETPLACE_SEPOLIA_ABI, signer);
+    if (!nftAddress) {
+      setIsLoading(false);
+      setError(true); 
+      setStatus({ type: "error", message: "Dummy, no nft selected " });
+      return;
+    }
+    const unlisted = await UnlistToken(marketContract, BigInt(tokenId), nftAddress);
+    if (!unlisted) {
+      setIsLoading(false);
+      setError(true); 
+      setStatus({ type: "error", message: "Unlisting Failed " });
+      return;
+    }
+    // final 
+       setIsLoading(false);
+      setSuccess(true);
+      setStatus({ type: "success", message: "NFT unlisted successfully " });
+  }
   if (!isOpen) return null;
 
   return (
@@ -158,7 +186,59 @@ export const PriceModal: React.FC<PriceModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
-      <div
+
+      {listStatus === 'listed'? (
+           <div
+        className="bg-os-bg-elevated rounded-2xl shadow-os-xl p-6 w-full max-w-md mx-4 border border-os-border"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-os-text-primary">
+            Unlist NFT from MarketPlace
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-os-text-tertiary hover:text-os-text-primary transition-colors"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleUnlisting}>
+          {/* Footer Buttons */}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-3 bg-os-bg-secondary text-os-text-primary rounded-xl hover:bg-os-bg-tertiary transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-3 bg-opensea-blue text-white rounded-xl hover:bg-opensea-blue/90 transition-colors font-medium"
+            >
+              Unlist NFT
+            </button>
+          </div>
+        </form>
+      </div>
+      ) : (
+          <div
         className="bg-os-bg-elevated rounded-2xl shadow-os-xl p-6 w-full max-w-md mx-4 border border-os-border"
         onClick={(e) => e.stopPropagation()}
       >
@@ -244,6 +324,9 @@ export const PriceModal: React.FC<PriceModalProps> = ({
           </div>
         </form>
       </div>
+          )
+        }
+      
       {error && (
         <PopupMessageBox
           message={status?.message}
@@ -255,7 +338,7 @@ export const PriceModal: React.FC<PriceModalProps> = ({
         <PopupMessageBox
           message={status?.message}
           type="success"
-          onClose={() => setError(false)}
+          onClose={() => setSuccess(false)}
         />
       )}
       {isloading && <Spinner />}

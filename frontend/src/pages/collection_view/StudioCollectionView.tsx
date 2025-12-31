@@ -23,9 +23,7 @@ const StudioCollectionView: React.FC = () => {
   const location = useLocation();
 
   const [activeTab, setActiveTab] = useState<string>("items");
-  const [filterStatus, setFilterStatus] = useState<
-    "all" | "listed" | "unlisted"
-  >("all");
+  const [filterStatus, setFilterStatus] = useState< "all" | "listed" | "unlisted" >("all");
   const [sortBy, setSortBy] = useState<string>("recent");
   const [collection, setCollection] = useState<FetchedCollection | null>(null);
   const [loading, setLoading] = useState(true);
@@ -140,37 +138,7 @@ const StudioCollectionView: React.FC = () => {
   };
 
 
-  const handleUnlist = async () => {
-    
-    // stat loadding 
-    setLoading(true);
-    if (!signer) {
-      setLoading(false);
-      setError("Connect wallet first , dummy!");
-      return;
-    }
-    // wallet instance 
-    const marketPlace_i = getWriteContractInstance(MARKETPLACE_SEPOLIA_ADDRESS, MARKETPLACE_SEPOLIA_ABI, signer);
-    if (!collection) {
-      setLoading(false);
-      setError("No collection selected ");
-      return;
-    }
-    if (!selectedNft) {
-      setLoading(false);
-      setError("No NFT Selected")
-      return;
-    }
-    const isUnlisted = await UnlistToken(marketPlace_i, selectedNft.tokenId, collection?.contractAddress);
-    if (!isUnlisted) {
-      setLoading(false);
-      setError("Failed to unlist NFT");
-      return;
-    }
-
-   
-    setLoading(false);
-  }
+  
 
   // Loading state
   if (loading) {
@@ -459,13 +427,8 @@ const StudioCollectionView: React.FC = () => {
                     status={nft?.status }
                     context={isStudioContext ? "studio" : "marketplace"}
                     loading={false}
-                    onUnlist = {
-                      handleUnlist}
-                    onList={
-                      isStudioContext && !nft.isListed
-                        ?()=> handleSelection(nft)
-                        : undefined
-                    }
+                    onUnlist={isStudioContext && nft.status==='listed' ? () => handleSelection(nft) : undefined}
+                    onList={isStudioContext && nft.status==='unlisted' ? ()=> handleSelection(nft)  : undefined }
                   />
                 ))}
               </CardGrid>
@@ -513,6 +476,7 @@ const StudioCollectionView: React.FC = () => {
         isOpen={priceModalOpen}
         tokenId={selectedNft?.tokenId || 0}
         nftAddress={collection?.contractAddress}
+        listStatus={selectedNft?.status}
         onClose={() => {
         setPriceModalOpen(false);
         setSelectedNft(null);
