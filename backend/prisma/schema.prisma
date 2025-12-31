@@ -27,6 +27,7 @@ model Collection {
   col_uri   String
   address   String?
   createdAt DateTime @default(now())
+  changed   Boolean? @default(true) 
 
   // relations
   User      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -43,6 +44,7 @@ model Nft {
   current_price String?
   status        String     @default("unlisted")
   createdAt     DateTime   @default(now())
+  changed       Boolean?       @default(true)// this tracks whether something has changed recently or not 
 
   //relations
   collection    Collection @relation(fields: [col_id], references: [id], onDelete: Cascade)
@@ -56,6 +58,9 @@ model Sold {
   seller_id Int
   price     String
   soldAt    DateTime @default(now())
+  changed   Boolean? @default(true)
+
+  //relations
   buyer     User     @relation("Buyer_User", fields: [buyer_id], references: [id], onDelete: Cascade)
   seller    User     @relation("Seller_User", fields: [seller_id], references: [id], onDelete: Cascade)
 }

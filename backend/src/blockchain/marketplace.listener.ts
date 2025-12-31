@@ -15,7 +15,6 @@ if (!RPC_URL) {
 
 export const provider = new JsonRpcProvider(RPC_URL);
 
-
 provider.getNetwork().then(network => {
     console.log(`Provider is connected to network ${network.name} with chain id ${network.chainId}`);
 })

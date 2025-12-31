@@ -18,6 +18,7 @@ import { JsonWebTokenError } from 'jsonwebtoken';
 import { urlToHttpOptions } from 'node:url';
 import nftRouter from '@/route/nftRoute';
 import { decode } from 'node:punycode';
+import { channel } from 'node:diagnostics_channel';
 
 // creacte collection
 export const create_offchain_collection = async (
@@ -107,7 +108,9 @@ export const create_offchain_collection = async (
 
 export const fetchAllCollections = async (req: Request, res: Response) => {
   try {
-    // Query params
+    // Detect change in nft or collection
+    const somethingChanged = await somethingHasChange();
+
     const {
       category,
       sortBy = 'recent',
@@ -137,7 +140,7 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
     if (sortBy === 'oldest') orderBy = { createdAt: 'asc' };
 
     // Return cache response 
-    if (cache.has('allCollections')) {
+    if (!somethingChanged && cache.has('allCollections')) {
       console.log("GETTING DATA FROM TTL CACHE ");
       const response_data = cache.get('allCollections');
       return res.json(response_data);
@@ -165,7 +168,8 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
       skip,
       take: limitNum,
     });
-
+    // update status in  nft and collections
+    await updateChangeStatus();
     // Total count
     const totalCollections = await prisma.collection.count({
       where: whereClause,
@@ -285,6 +289,9 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
 
 export const fetchUserCollections = async (req: any, res: Response) => {
   try {
+     // Detect change in nft or collection
+    const somethingChanged = await somethingHasChange();
+
     const userId = req.user?.userId;
     const skip = Number(req.query.skip ?? 0);
     const take = Number(req.query.take ?? 10);
@@ -297,7 +304,7 @@ export const fetchUserCollections = async (req: any, res: Response) => {
       });
     }
 
-    if (cache.has("userCollections")) {
+    if (!somethingChanged && cache.has("userCollections")) {
       console.log("RETRIEVING USER COLLECTIONS FROM TTL CACHE");
 
       return res.status(200).json(cache.get("userCollections"));
@@ -324,6 +331,8 @@ export const fetchUserCollections = async (req: any, res: Response) => {
       orderBy: { createdAt: 'asc' },
     });
 
+    // update nft and collection status
+    await updateChangeStatus()
     const totalCollections = await prisma.collection.count({
       where: { user_id: userId },
     });
@@ -421,7 +430,19 @@ export const fetchUserCollections = async (req: any, res: Response) => {
 export const fetchCollectionById = async (req: Request, res: Response) => {
   try {
     const collectionId = parseInt(req.params.col_id);
-
+    const col = await prisma.collection.findFirst({
+      where: { id: collectionId },
+      include: {
+        Nft: {
+          where: {changed: true}
+        }
+      }
+    });
+    if (!col) {
+      return res.status(404).json({success: false,  message:`No collection found for id ${collectionId}`})
+    }
+    const somethingChanged:boolean = (col.changed || (col.Nft.length ?? 0) > 0) ;
+    
     if (!collectionId) {
       return res.status(400).json({
         success: false,
@@ -429,7 +450,7 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
         message: 'Collection ID must be a valid number',
       });
     }
-    if (cache.has(collectionId.toString())) {
+    if (!somethingChanged && cache.has(collectionId.toString())) {
       console.log("RETRIEVING COLLECTION BY ID FROM TTL CACHE");
       return res.status(200).json(cache.get(collectionId.toString()));
     }
@@ -469,6 +490,22 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
         message: 'Collection not found',
       });
     }
+    // update changed status 
+    await prisma.collection.update({
+      where: { id: collectionId },
+      data: {
+        changed: false,
+        Nft: {
+          updateMany: {
+            where: {changed: true},
+            data: {
+              changed: false
+            }
+          }
+        }
+      }
+    });
+
     // Fetch IPFS metadata
     const meta = await fetchIpfsMetadata(collection.col_uri);
 
@@ -590,3 +627,47 @@ export const fetchCollectionABI = async (req: any, res: Response) => {
     return;
   }
 };
+
+
+export const somethingHasChange = async () => {
+  const cols = await prisma.collection.findFirst({
+    where: { changed: true },
+    include: {
+      Nft: {
+        where: {
+          changed: true
+        }
+      }
+    }
+  })
+  // has something changed
+  if (!cols) {
+    console.log("No collection has changed = true or it's nfts has changed =true");
+    return;
+  }
+  const nftOrCollectionChanged = cols.changed || (cols.Nft.length ?? 0) > 0; 
+  return nftOrCollectionChanged;
+}
+
+export const updateChangeStatus = async () => {
+  try {
+    await prisma.$transaction([
+      // collection update
+      prisma.collection.updateMany({
+        where: {
+          changed: true
+        }, 
+        data: {
+          changed: false
+        }
+      }),
+      // nft update
+      prisma.nft.updateMany({
+        where: {changed: true},
+        data: { changed: false }
+      })
+    ]);
+  } catch (err: any) {
+    console.log("Error: ", err.message);
+  }
+}
