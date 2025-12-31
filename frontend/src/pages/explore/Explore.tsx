@@ -1,19 +1,62 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fetchAllCollections } from '../../utils/fetchCollections';
 import { 
   NFTCard, 
   CardGrid,
   SectionHeader,
+  PopupMessageBox,
+  Loader,
+  Spinner,
 } from '../../components';
-import { CollectionsCarousel } from '../../components/carousel/ColCarousel';
-import { collections, nfts } from '../../data/sampledata';
+import { getWriteContractInstance , BuyToken} from '../../ether/contract_interaction';
+import { MARKETPLACE_SEPOLIA_ABI, MARKETPLACE_SEPOLIA_ADDRESS } from '../../../../shared/constants/contracts';
+import { useAuth } from '../../context/AuthContext';
 
 const Explore: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [status, setStatus] = useState({ type: "", message: "" });
+  const [isloading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [collections, setCollection] = useState<any>();
+  const [nfts, setNfts] = useState<any>();
+  const [selectedNft, setSelectedNft] = useState<any>();
+
+  // aut contrext 
+  const { wallet, signer } = useAuth();
+
+
+  //fetch all collections
+  useEffect(() => {
+    
+    const fetchCollections = async () => {
+      const { collections, pagination } = await fetchAllCollections();
+      if (!collections) {
+        console.log("Failed to fetch all collections");
+        return
+      }
+      // set collection
+      setCollection(collections);
+      // also nfts
+      const nfts = collections.flatMap(col => (col?.nfts ?? []).map(nft => ({...nft, col_name: col.name, contractAddress:col.contractAddress}))
+      );
+      if (nfts.length === 0 ) {
+        console.log("No nft found")
+        return;
+      }
+
+      setNfts(nfts);
+    }
+    fetchCollections();
+    }, []);
 
   // Get trending NFTs (listed NFTs only)
-  const trendingNFTs = nfts.filter(nft => nft.isListed).slice(0, 10);
+  if (!nfts) {
+    return;
+  }
+  const trendingNFTs = nfts.filter(nft => nft.status==='listed').slice(0, 10);
 
   // Get featured collections (sorted by volume)
   const featuredCollections = [...collections]
@@ -31,9 +74,48 @@ const Explore: React.FC = () => {
     navigate(`/collection/${collectionId}`);
   };
 
-  const handleNFTClick = (nftId: number) => {
-    navigate(`/nft/${nftId}`);
+  // const 
+  const handleNFTClick = (nft: any) => {
+    setSelectedNft(nft);
   };
+
+  const handleNFTBuying = async () => {
+    // setLoading 
+    setIsLoading(true);
+    if (!signer) {
+      setIsLoading(false);
+      setError(true);
+      setStatus({ type: 'error', message: 'Dummy, connect wallet first' });
+      return;
+    }
+    const marketPlace = getWriteContractInstance(MARKETPLACE_SEPOLIA_ADDRESS, MARKETPLACE_SEPOLIA_ABI, signer);
+    if (!marketPlace) {
+      setIsLoading(false);
+      setError(true);
+      setStatus({ type: 'error', message: 'Something went wrong , please try again later ' });
+      return;
+    }
+    // marketconrant instance 
+    if (!selectedNft) {
+      setIsLoading(false);
+      setError(true);
+      setStatus({ type: 'error', message: 'Dummy, select an nft in order to buy' });
+      return;
+    }
+    console.log("SELECTED NFT ADDRESS : ", selectedNft);
+    const sold = await BuyToken(marketPlace, selectedNft.contractAddress, selectedNft.tokenId);
+    if (!sold) {
+      setIsLoading(false);
+      setError(true);
+      setStatus({ type: 'error', message: 'Failed to buy nft' });
+      return;
+    }
+
+    // finally
+    setIsLoading(false);
+      setSuccess(true);
+      setStatus({ type: 'success', message: 'Got it , Nft bought successfully' });
+  }
 
   return (
     <div className="min-h-screen bg-os-bg-primary">
@@ -173,25 +255,6 @@ const Explore: React.FC = () => {
               }
             />
           </div>
-          
-          {/* Carousel - Full Bleed with Internal Padding */}
-          {/* {collections && collections.length > 0 ? (
-            <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
-              <CollectionsCarousel 
-                collections={collections} 
-                onCollectionClick={handleCollectionClick}
-              />
-            </div>
-          ) : (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center py-12 bg-os-bg-secondary/50 backdrop-blur-xl border border-white/10 rounded-2xl">
-                <svg className="w-16 h-16 text-os-text-tertiary mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-                <p className="text-os-text-secondary">No collections available at the moment</p>
-              </div>
-            </div>
-          )} */}
         </section>
 
         {/* Trending NFT Gifts */}
@@ -217,13 +280,19 @@ const Explore: React.FC = () => {
             <CardGrid cols={{ sm: 3, md: 3, lg: 4, xl: 5 }}>
               {trendingNFTs.map((nft) => (
                 <NFTCard
-                  key={nft.id}
-                  {...nft}
-                  context="marketplace"
-                  loading={false}
-                  onClick={() => handleNFTClick(nft.id)}
-                  onFavorite={() => console.log('Favorite NFT:', nft.id)}
-                  onBuy={() => console.log('Buy NFT:', nft.id)}
+                 key={nft.id}
+                  tokenId={nft?.tokenId}
+                  col_name={nft?.col_name}
+                  contractAddress={nft?.contractAddress}
+                    id={nft.id}
+                    image={nft.uri}
+                    price={nft?.currentPrice}
+                    lastPrice={nft?.basePrice}
+                    status={nft?.status }
+                    context={"marketplace"}
+                    loading={false}
+                  onClick={() => handleNFTClick(nft)}
+                  onBuy={handleNFTBuying}
                 />
               ))}
             </CardGrid>
@@ -435,6 +504,8 @@ const Explore: React.FC = () => {
           </div>
         </section>
       </main>
+      {error && <PopupMessageBox  message={status.message} onClose={() => setError(false)}  type='error'/>}
+      {success && <PopupMessageBox message={status.message} onClose={() => setError(false)}  type='success'/>}
     </div>
   );
 };

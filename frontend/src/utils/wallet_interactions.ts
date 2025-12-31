@@ -30,6 +30,7 @@ export const connectUserWallet = async () => {
 
   if (!browserProvider) {
     browserProvider = new ethers.BrowserProvider(window.ethereum);
+    console.log("Browser Provider: ", browserProvider);
   }
 
   if (!readProvider) {

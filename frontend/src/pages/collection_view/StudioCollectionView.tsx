@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
-import {
-  useParams,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
+import { PriceModal } from "../../components/ui/PriceModal";
+
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { getWriteContractInstance, UnlistToken } from "../../ether/contract_interaction";
+import { MARKETPLACE_SEPOLIA_ABI, MARKETPLACE_SEPOLIA_ADDRESS } from "../../../../shared/constants/contracts";
 import {
   NFTCard,
   CardGrid,
@@ -14,11 +14,7 @@ import {
 import type { Tab } from "../../components/sections/TabNavigation";
 import { FetchedCollection } from "../../services/types";
 import { fetchCollectionById } from "../../utils/fetchCollections";
-
-
-
-
-
+import { useAuth } from "../../context/AuthContext";
 
 const StudioCollectionView: React.FC = () => {
   //dynamic collection url id
@@ -27,14 +23,17 @@ const StudioCollectionView: React.FC = () => {
   const location = useLocation();
 
   const [activeTab, setActiveTab] = useState<string>("items");
-  const [filterStatus, setFilterStatus] = useState<
-    "all" | "listed" | "unlisted"
-  >("all");
+  const [filterStatus, setFilterStatus] = useState< "all" | "listed" | "unlisted" >("all");
   const [sortBy, setSortBy] = useState<string>("recent");
   const [collection, setCollection] = useState<FetchedCollection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [wantToMint, setWantToMint] = useState(false);
+
+  // **NEW: Modal State**
+  const [priceModalOpen, setPriceModalOpen] = useState(false);
+  const [selectedNft, setSelectedNft] = useState<any | null>(null);
+  const { signer } = useAuth();
 
   // Determine context from route
   const isStudioContext = location.pathname.includes("/studio/collection");
@@ -132,27 +131,14 @@ const StudioCollectionView: React.FC = () => {
     [filteredNFTs.length]
   );
 
-  const handleNFTClick = (nftId: number) => {
-    navigate(`/nft/${nftId}`);
+  // **MODIFIED: Open modal instead of direct listing**
+  const handleSelection = (nft: any) => {
+    setSelectedNft(nft);
+    setPriceModalOpen(true);
   };
 
-  const handleList = (nftId: number) => {
-    // TODO: Implement list functionality
-    console.log("List NFT:", nftId);
-    alert(`List NFT #${nftId} for sale`);
-  };
 
-  const handleUnlist = (nftId: number) => {
-    // TODO: Implement unlist functionality
-    console.log("Unlist NFT:", nftId);
-    alert(`Unlist NFT #${nftId} from sale`);
-  };
-
-  const handleBuy = (nftId: number) => {
-    // TODO: Implement buy functionality
-    console.log("Buy NFT:", nftId);
-    alert(`Buy NFT #${nftId}`);
-  };
+  
 
   // Loading state
   if (loading) {
@@ -436,26 +422,13 @@ const StudioCollectionView: React.FC = () => {
                     col_name={collection.name}
                     id={nft.id}
                     image={nft.uri}
-                    price={nft.price}
-                    isListed={nft.isListed}
+                    price={nft?.currentPrice}
+                    lastPrice={nft?.basePrice}
+                    status={nft?.status }
                     context={isStudioContext ? "studio" : "marketplace"}
                     loading={false}
-                    onClick={() => handleNFTClick(nft.id)}
-                    onList={
-                      isStudioContext && !nft.isListed
-                        ? () => handleList(nft.id)
-                        : undefined
-                    }
-                    onUnlist={
-                      isStudioContext && nft.isListed
-                        ? () => handleUnlist(nft.id)
-                        : undefined
-                    }
-                    onBuy={
-                      !isStudioContext && nft.isListed
-                        ? () => handleBuy(nft.id)
-                        : undefined
-                    }
+                    onUnlist={isStudioContext && nft.status==='listed' ? () => handleSelection(nft) : undefined}
+                    onList={isStudioContext && nft.status==='unlisted' ? ()=> handleSelection(nft)  : undefined }
                   />
                 ))}
               </CardGrid>
@@ -485,6 +458,8 @@ const StudioCollectionView: React.FC = () => {
           />
         )}
       </div>
+
+      {/* Modals */}
       {wantToMint && (
         <MintForm
           type={collection.type}
@@ -495,7 +470,20 @@ const StudioCollectionView: React.FC = () => {
           setWantToMint={setWantToMint}
         />
       )}
+
+      {/* **NEW: Price Modal** */}
+      <PriceModal
+        isOpen={priceModalOpen}
+        tokenId={selectedNft?.tokenId || 0}
+        nftAddress={collection?.contractAddress}
+        listStatus={selectedNft?.status}
+        onClose={() => {
+        setPriceModalOpen(false);
+        setSelectedNft(null);
+        }}
+      />
     </div>
   );
 };
+
 export default StudioCollectionView;

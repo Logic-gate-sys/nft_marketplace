@@ -7,53 +7,61 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id          Int          @id @default(autoincrement())
+  wallet      String       @unique
+  username   String?
+  email       String?
+  created_at  DateTime     @default(now())
 
-// --------------------- SCHEMA -----------------------------------------
-
-model Collection {
-  col_uri   String
-  create_at DateTime   @default(now())
-  id        Int        @id @default(autoincrement())
-  user_id   Int
-  User      User       @relation(fields: [user_id], references: [id])
-  Listings  Listings[]
-  Nft       Nft[]
+  // relations
+  collections Collection[]
+  nfts        Nft[]
+  bought      Sold[]       @relation("Buyer_User")
+  sold        Sold[]       @relation("Seller_User")
 }
 
-model Listings {
-  col_id     Int
-  nft_id     Int
-  price      BigInt
-  owner      String
-  listed_at  DateTime   @default(now())
-  id         Int        @id @default(autoincrement())
-  Collection Collection @relation(fields: [col_id], references: [id])
+model Collection {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  col_uri   String
+  address   String?
+  createdAt DateTime @default(now())
+  changed   Boolean? @default(true) 
+
+  // relations
+  User      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  Nft      Nft[]
 }
 
 model Nft {
-  id         Int   @unique    @id @default(autoincrement())
-  col_id     Int
-  uri    String?
-  token_id   Int
-  owner_id   Int
-  Collection Collection @relation(fields: [col_id], references: [id])
-  User       User       @relation(fields: [owner_id], references: [id])
+  id            Int        @id @default(autoincrement())
+  token_id      Int
+  col_id        Int
+  uri           String    @unique
+  owner_id      Int
+  base_price    String?
+  current_price String?
+  status        String     @default("unlisted")
+  createdAt     DateTime   @default(now())
+  changed       Boolean?       @default(true)// this tracks whether something has changed recently or not 
+
+  //relations
+  collection    Collection @relation(fields: [col_id], references: [id], onDelete: Cascade)
+  User         User       @relation(fields: [owner_id], references: [id], onDelete: Cascade)
 }
 
 model Sold {
-  tokenId Int
-  from    String
-  to      String
-  amount  Int
-  at      DateTime @default(now())
-  id      Int      @id @default(autoincrement())
-}
+  id        Int      @id @default(autoincrement())
+  token_id  Int
+  buyer     String
+  seller    String
+  price     String
+  changed   Boolean? @default(true)
+  soldAt    DateTime @default(now())
 
-model User {
-  id         Int          @id @default(autoincrement())
-  username   String?
-  wallet     String       @unique
-  email      String?
-  Collection Collection[]
-  Nft        Nft[]
+
+  //relations
+  u_buyer     User     @relation("Buyer_User", fields: [buyer], references: [wallet], onDelete: Cascade)
+  u_seller    User     @relation("Seller_User", fields: [seller], references: [wallet], onDelete: Cascade)
 }
