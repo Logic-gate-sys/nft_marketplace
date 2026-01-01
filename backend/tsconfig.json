@@ -16,13 +16,6 @@
     "declaration": true,
      // no typecheck for lib files ; I have no control over libs I install
     "skipLibCheck": true,
-
-    "baseUrl": "./src",
-    "paths": {
-      "@/*": ["./"]
-    },
-
-    "types": ["node"]
   },
   "include": ["src"],
   "exclude": ["node_modules"]
