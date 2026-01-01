@@ -1,13 +1,29 @@
 {
   "compilerOptions": {
-    "module": "esnext",
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    "module": "es2020",
     "moduleResolution": "node",
-    "target": "ES2023",
+    "target": "es2020",
+    "lib": ["es2020"],
+
     "strict": true,
     "esModuleInterop": true,
-    "baseUrl": "src/",
+    "allowSyntheticDefaultImports": true,
+
+    "sourceMap": true,
+    "declaration": true,
+     // no typecheck for lib files ; I have no control over libs I install
+    "skipLibCheck": true,
+
+    "baseUrl": "./src",
     "paths": {
-      "@/*":["*"]
-    }
-  }
+      "@/*": ["./"]
+    },
+
+    "types": ["node"]
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }

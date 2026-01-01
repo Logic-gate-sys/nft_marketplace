@@ -5,15 +5,16 @@
   "main": ".eslintrc.js",
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--use-system-ca nodemon --trace-warnings --exec tsx src/server.ts",
-     "start": "tsx src/server.ts",
-    "start_prod": "tsx src/server.ts"
+    "build": "tsc ",
+    "start-ts":"tsx --warnings --watch  src/server.ts",
+    "start": "node --watch dist/server.js"
   },
   "keywords": [],
   "author": "Logic Gates",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@types/node": "^24.10.2",
+    "@types/node": "^24.10.4",
     "@types/pg": "^8.15.6",
     "cross-env": "^10.1.0",
     "nodemon": "^3.1.11",

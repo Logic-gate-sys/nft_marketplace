@@ -1,7 +1,7 @@
 import express from 'express';
 const { Router } = express;
 import { create_offchain_collection, fetchAllCollections, fetchCollectionABI, fetchCollectionById, fetchUserCollections } from '../controller/collection'
-import { Authenticate } from '@/middlewares/Auth';
+import { Authenticate } from '../middlewares/Auth';
 import multer from 'multer';
 
 

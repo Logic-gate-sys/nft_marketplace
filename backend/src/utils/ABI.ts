@@ -60,7 +60,7 @@ export const fetchAbiFromEtherscan = async (address: string, chainId: number =11
       console.log(`Etherscan error: ${res.status}`);
       return;
     }
-    const  json  = await res.json(); // ABI as JS object
+    const  json:any  = await res.json(); // ABI as JS object
     if (json.status !== '1') {
       console.log(`Etherscan NOTOK: ${json.result}`);
       return;

@@ -1,5 +1,5 @@
 import { Request, NextFunction, Response } from "express";
-import { verifyToken } from "@/utils/auth";
+import { verifyToken } from "../utils/auth";
 
 export const Authenticate = async (req: any, res: Response, next: NextFunction) => {
   try {
