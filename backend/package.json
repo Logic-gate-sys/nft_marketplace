@@ -4,10 +4,9 @@
   "description": "",
   "main": ".eslintrc.js",
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--use-system-ca nodemon --trace-warnings --exec tsx src/server.ts",
-    "build": "tsc ",
-    "start-ts":"tsx --warnings --watch  src/server.ts",
-    "start": "node --watch dist/server.js"
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "Logic Gates",
