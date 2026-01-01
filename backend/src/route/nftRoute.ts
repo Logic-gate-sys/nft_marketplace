@@ -2,7 +2,7 @@ import express from 'express';
 const { Router } = express;
 import { mintNFT, uploadMintOffChainData } from '../controller/nft';
 import multer from 'multer';
-import { Authenticate } from '@/middlewares/Auth';
+import { Authenticate } from '../middlewares/Auth';
 
 
 

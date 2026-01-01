@@ -1,24 +1,16 @@
 import { prisma } from './../lib/prisma';
 import { Request, Response } from 'express';
-import { cache } from '@/utils/ABI';
 import {
   uploadImageToPinata,
   uploadCollectionMetaData,
-  upload_nft_metadata,
 } from '../utils/ifpfs';
-import { fetchAbiFromEtherscan } from '@/utils/ABI';
+import { fetchAbiFromEtherscan, cache } from '../utils/ABI';
 import {
   ipfsCIDToHttp,
-  ipfsToHttp,
   fetchIpfsMetadata,
-  formatCollectionMetadata,
   decodeOnChainTokenURI,
 } from '../utils/ifpfs';
-import { JsonWebTokenError } from 'jsonwebtoken';
-import { urlToHttpOptions } from 'node:url';
-import nftRouter from '@/route/nftRoute';
-import { decode } from 'node:punycode';
-import { channel } from 'node:diagnostics_channel';
+
 
 // creacte collection
 export const create_offchain_collection = async (
@@ -180,7 +172,7 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
         collections.map(async (col) => {
           // store in cache for a short time like 15 mins
 
-          const meta = await fetchIpfsMetadata(col.col_uri);
+          const meta : any = await fetchIpfsMetadata(col.col_uri);
 
           const transformedNfts = await Promise.all(
             (col.Nft ?? []).map(async (nft) => {
@@ -189,7 +181,7 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
                 if (!nft.uri) {
                   return;
                 }
-                const metadata = await fetchIpfsMetadata(nft.uri);
+                const metadata: any = await fetchIpfsMetadata(nft.uri);
 
                 return {
                   id: nft.id,
@@ -339,7 +331,7 @@ export const fetchUserCollections = async (req: any, res: Response) => {
 
     const transformedCollections = await Promise.all(
       collections.map(async (col) => {
-        const meta = await fetchIpfsMetadata(col.col_uri);
+        const meta:any = await fetchIpfsMetadata(col.col_uri);
 
         const transformedNfts = await Promise.all(
           (col.Nft ?? []).map(async (nft) => {
@@ -348,7 +340,7 @@ export const fetchUserCollections = async (req: any, res: Response) => {
               if (!nft.uri) {
                 return;
               }
-              const metadata = await fetchIpfsMetadata(nft.uri);
+              const metadata : any = await fetchIpfsMetadata(nft.uri);
 
               return {
                 id: nft.id,
@@ -507,8 +499,8 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
     });
 
     // Fetch IPFS metadata
-    const meta = await fetchIpfsMetadata(collection.col_uri);
-
+    const meta :any= await fetchIpfsMetadata(collection.col_uri);
+    
     const transformedNfts = await Promise.all(
       (collection.Nft ?? []).map(async (nft) => {
         // OFF-CHAIN NFT
@@ -516,7 +508,7 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
           if (!nft.uri) {
             return;
           }
-          const metadata = await fetchIpfsMetadata(nft.uri);
+          const metadata:any = await fetchIpfsMetadata(nft.uri);
 
           return {
             id: nft.id,
