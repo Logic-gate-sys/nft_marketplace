@@ -1,6 +1,6 @@
 import { Contract, ethers, Provider } from 'ethers';
 import { prisma } from './../lib/prisma';
-import { fetchAbiFromEtherscan } from '@/utils/ABI';
+import { fetchAbiFromEtherscan } from '../utils/ABI';
 import { provider } from './marketplace.listener';
 
 export const r_contract = async (address: string) => {
