@@ -1,4 +1,3 @@
-Here's your complete `README.md` file ready to copy and paste:
 
 ```markdown
 # NFT Marketplace
