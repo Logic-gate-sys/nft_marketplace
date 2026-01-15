@@ -12,7 +12,6 @@ if (!RPC_URL) {
   throw new Error("RPC_URL is not set in environment variables");
 }
 
-
 export const provider = new JsonRpcProvider(RPC_URL);
 
 provider.getNetwork().then(network => {

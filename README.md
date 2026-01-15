@@ -35,12 +35,37 @@ The project is organized into three main parts:
 ##  Project Structure
 
 ```
-nft_marketplace/
- ├── frontend/              # React-based web application
- ├── nft_contract/          # Solidity smart contracts (Foundry)
- ├── nft-marketplace-api/   # Node.js/Express backend API
- ├── README.md              # Project overview (this file)
- └── ...
+.
+├── Dockerfile
+├── README.md
+├── backend
+│   ├── node_modules
+│   ├── nodemon.json
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── prisma
+│   ├── prisma.config.ts
+│   ├── seed.sql
+│   ├── src
+│   └── tsconfig.json
+├── frontend
+│   ├── dist
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── node_modules
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   ├── src
+│   ├── tailwind.config.ts
+│   ├── tsconfig.json
+│   ├── vite-env.d.ts
+│   └── vite.config.ts
+├── seed.sql
+└── shared
+    ├── constants
+    ├── schema.ts
+    └── types
 ```
 
 ---
