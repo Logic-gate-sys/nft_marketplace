@@ -1,7 +1,7 @@
 
 import { Request, Response } from 'express';
 import { prisma } from './../lib/prisma';
-import { signAcessToken, signRefreshToken, verifyToken } from '../utils/auth';
+import { signAcessToken, signRefreshToken, verifyToken } from '../utils/jwt';
 
 
 // create User

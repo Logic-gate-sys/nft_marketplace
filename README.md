@@ -18,8 +18,8 @@ The project is organized into three main parts:
 * [How It Works](#-how-it-works)
 * [Getting Started](#-getting-started)
 
-  * [Prerequisites](#prerequisites)
-  * [Setup Instructions](#setup-instructions)
+* [Prerequisites](#prerequisites)
+* [Setup Instructions](#setup-instructions)
 * [Smart Contracts](#-smart-contracts)
 * [Backend API](#-backend-api)
 * [Frontend](#-frontend)

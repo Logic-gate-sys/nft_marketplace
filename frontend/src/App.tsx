@@ -8,57 +8,69 @@ import { createUser, login } from "./services/auth";
 import { Nav, PopupMessageBox } from "./components";
 import { useAuth } from "./context/AuthContext";
 import StudioCollectionView from "./pages/collection_view/StudioCollectionView";
-import { ConsoleSqlOutlined } from "@ant-design/icons";
+
+
+type Message = {
+  type:"error" | "success" | "warning" | "info" | undefined, 
+  detail : string 
+}
 
 const App: React.FC = () => {
-  const [connected, setConnected] = useState<boolean>(false);
+  const [showMessage, setShowMessage] = useState<boolean>(false);
   const { wallet, user, connectWallet, token } = useAuth();
+  const [message, setMessage] = useState<Message>({ type: 'info', detail: 'Waiting' });
 
-  const message = `Wallet connection successful! Close this button to continue`;
-  useEffect(() => {
-    console.log("ACESS TOKEN FROM AUTH", token);
-  }, [token]);
 
   const handleWalletConnect = async (): Promise<void> => {
     try {
       // retrieve ethers details
       const { readProvider, provider, signer, wallet } = await connectUserWallet();
-      console.log("READ ALCHEMY PROVIDER ", readProvider);
+      // console.log("READ ALCHEMY PROVIDER ", readProvider);
       if (!wallet) {
-        console.log("Could not retrieve wallet address");
+        setShowMessage(true)
+         setMessage({type:'error', detail:'No wallet address found!'})
         return;
       }
 
       // try creating user first :
       const res = await createUser(wallet);
-      if (!res) {
-        return;
+      const reason = res?.reason; 
+      //switch
+      switch (reason) {
+        case 'bad_request':
+          setShowMessage(true);
+          setMessage({ type: 'error', detail: 'Could not create user !, bad request' })
+          break;
+        
+        case 'duplicate':
+          const { acessToken, user } = await login(wallet);
+          console.log("USER : ", user);
+            if (!user) {
+              setShowMessage(true);
+              setMessage({ type: 'error', detail: 'Error: Failed to login user' });
+              break; 
+             }
+          // if login successful , connect
+          connectWallet(wallet, signer, provider, readProvider, acessToken, user);
+          setMessage({ type: 'success', detail: 'Success, wallet login successful' })
+          setShowMessage(true);
+          break; 
+        
+        case 'success':
+          // assign Auth details
+          connectWallet(wallet, signer, provider, readProvider, acessToken, user);
+          setMessage({ type: 'success', detail: 'Success, wallet created successful' })
+          setShowMessage(true);
+          break; 
+        
+        default:
+          setMessage({ type: 'warning', detail: 'Weird!. This is not supposed to happen' })
+          setShowMessage(true);
       }
-      console.log("Creating result : ", res);
-      if (res.reason == "bad_request") {
-        console.log("Could not create user !, bad request");
-        return;
-      } else if (res.reason === "duplicate") {
-        console.log("User already exist ");
-        // login rather
-        let { acessToken, user } = await login(wallet);
-        console.log("ACESS TOKEN : ", acessToken);
-        if (acessToken.isNull) {
-          user = await createUser(wallet);
-          if (!user) {
-            console.error("Could not create new user");
-            return;
-          }
-        }
-        // assign Auth details
-        connectWallet(wallet, signer, provider,readProvider, acessToken, user);
-        setConnected(true);
-      }
-      // safely return
-      setConnected(true);
-      return;
-    } catch (error) {
-      console.error("Wallet connection failed:", error);
+    } catch (err: any) {
+      setMessage({ type: 'error', detail: `Error ${err.message}` })
+      setShowMessage(true); 
+      console.error("Wallet connection failed:", err);
     }
   };
 
@@ -169,10 +181,11 @@ const App: React.FC = () => {
       </div>
 
       {/* Popup Message */}
-      {connected && (
+      {showMessage && (
         <PopupMessageBox
-          message={message}
-          onClose={() => setConnected(false)}
+          message={message.detail}
+          type={message.type}
+          onClose={() => setShowMessage(false)}
         />
       )}
     </div>

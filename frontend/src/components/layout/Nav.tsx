@@ -1,14 +1,6 @@
 import React, { useState } from "react";
 import Logo from "../../assets/logo.svg";
-import {
-  FileOutlined,
-  UserOutlined,
-  SettingOutlined,
-  MenuOutlined,
-  HomeOutlined,
-  AppstoreOutlined,
-  QuestionOutlined,
-} from "@ant-design/icons";
+import { MenuOutlined} from "@ant-design/icons";
 import { NavLink } from "react-router-dom";
 
 const navLinks = [
@@ -77,7 +69,6 @@ const Nav: React.FC = () => {
           </div>
         )}
       </div>
-
       {/* Desktop View */}
       <div
         className="hidden md:flex flex-col h-screen bg-os-bg-tertiary border-r border-os-border transition-all duration-300"
