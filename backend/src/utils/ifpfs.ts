@@ -1,4 +1,4 @@
-import { pinata } from '../config/config';
+import { pinata } from '../config/config.ts';
 
 
 //GATE WAYS

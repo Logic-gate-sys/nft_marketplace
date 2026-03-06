@@ -3,15 +3,47 @@ import { useAuth } from "../context/AuthContext";
 //---------------------- function find user_ by wallet 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+<<<<<<< HEAD
+export const login = async (wallet: string) => {
+    const res = await fetch(`${BASE_URL}/users/login`,{
+=======
 
 export const login = async (wallet: string) => {
     const res = await fetch(
         `${BASE_URL}/users/login`,
         {
+>>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body:JSON.stringify({ wallet: wallet })
         });
+<<<<<<< HEAD
+    
+    //if request went rogue
+    if (!res.ok) {
+        return{ acessToken:null, user:null };
+    }
+
+    const { acessToken, user } = await res.json();
+    if (!acessToken || !user ) {
+        return { acessToken:null, user:null };
+    }
+    return { acessToken, user }; 
+}
+
+
+export const createUser = async (wallet: string, email?: string, username?: string) => {
+    try {
+        const res = await fetch(`${BASE_URL}/users`,
+            {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                // "Accept":"application/json"
+            },
+            body: JSON.stringify({ wallet: wallet })
+        });
+=======
     if (!res.ok) {
         console.log("Login failed");
         return;
@@ -47,6 +79,7 @@ export const createUser = async (wallet: string, email?: string, username?: stri
         });
 
         
+>>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
         // if status is bad
         if (res.status === 409) {
             return { ok: false, status: 409, reason: 'duplicate', user: null };
@@ -54,6 +87,14 @@ export const createUser = async (wallet: string, email?: string, username?: stri
 
         // if res status is not okay
         if (!res.ok) {
+<<<<<<< HEAD
+            return { ok: false, status: res.status, reason: 'bad_request', user: null };;
+        }
+        const { user } = await res.json();
+        return { ok: true, status: 201, reason: 'success', user: user };
+    } catch (err: any) {
+        console.log(err.message);
+=======
             console.error("User registeration failed");
             return { ok: false, status: res.status, reason: 'bad_request', user: null };;
         }
@@ -62,6 +103,7 @@ export const createUser = async (wallet: string, email?: string, username?: stri
         return { ok: true, status: 201, reason: 'success', user: user };
     } catch (err: any) {
         console.log(err);
+>>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
     }
 }
 

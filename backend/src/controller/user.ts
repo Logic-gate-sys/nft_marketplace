@@ -1,7 +1,7 @@
 
-import { Request, Response } from 'express';
-import { prisma } from './../lib/prisma';
-import { signAcessToken, signRefreshToken, verifyToken } from '../utils/auth';
+import type { Request, Response } from 'express';
+import { prisma } from './../lib/prisma.ts';
+import { signAcessToken, signRefreshToken, verifyToken } from '../utils/jwt.ts';
 
 
 // create User
@@ -11,7 +11,6 @@ export async function createUser(req:Request, res:Response) {
   if (!wallet) {
     return res.json({ message: "No wallet provided by user" });
   }
-
   try {
     // Create user with Prisma Client, conditionally include optional fields
     const alreadyExist = await prisma.user.findUnique({ where: {   wallet: wallet } }) ? true : false;

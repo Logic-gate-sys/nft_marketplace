@@ -1,22 +1,30 @@
 {
   "compilerOptions": {
-    "rootDir": "./src",
+    "rootDir": "./",
     "outDir": "./dist",
 
-    "module": "es2020",
-    "moduleResolution": "node",
+    // module and libraries 
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "target": "es2020",
     "lib": ["es2020"],
+
+    // for synthax checking
+    "allowUnreachableCode": false,
+    "noFallthroughCasesInSwitch": true,
 
     "strict": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
+    "allowArbitraryExtensions": true,
 
     "sourceMap": true,
     "declaration": true,
      // no typecheck for lib files ; I have no control over libs I install
     "skipLibCheck": true,
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }

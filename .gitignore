@@ -1,0 +1,9 @@
+
+./env
+./dockerignore
+./frontend/node_modules
+./backend/.env
+./backend/node_modules
+./**/.env
+./frontend/.env
+./**/node_modules

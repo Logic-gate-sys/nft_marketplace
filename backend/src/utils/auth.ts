@@ -1,5 +1,4 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import ethers from 'ethers';
 
 interface TokenPayload{
   userId: number;

@@ -1,1 +1,1 @@
-export { startMarketPlaceListeners} from './marketplace.listener'
+export { startMarketPlaceListeners} from './marketplace.listener.ts'

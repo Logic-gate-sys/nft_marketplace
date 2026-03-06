@@ -8,6 +8,20 @@ import { createUser, login } from "./services/auth";
 import { Nav, PopupMessageBox } from "./components";
 import { useAuth } from "./context/AuthContext";
 import StudioCollectionView from "./pages/collection_view/StudioCollectionView";
+<<<<<<< HEAD
+
+
+type Message = {
+  type:"error" | "success" | "warning" | "info" | undefined, 
+  detail : string 
+}
+
+const App: React.FC = () => {
+  const [showMessage, setShowMessage] = useState<boolean>(false);
+  const { wallet, user, connectWallet, token } = useAuth();
+  const [message, setMessage] = useState<Message>({ type: 'info', detail: 'Waiting' });
+
+=======
 import { ConsoleSqlOutlined } from "@ant-design/icons";
 
 const App: React.FC = () => {
@@ -18,19 +32,66 @@ const App: React.FC = () => {
   useEffect(() => {
     console.log("ACESS TOKEN FROM AUTH", token);
   }, [token]);
+>>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
 
   const handleWalletConnect = async (): Promise<void> => {
     try {
       // retrieve ethers details
       const { readProvider, provider, signer, wallet } = await connectUserWallet();
+<<<<<<< HEAD
+      // console.log("READ ALCHEMY PROVIDER ", readProvider);
+      if (!wallet) {
+        setShowMessage(true)
+         setMessage({type:'error', detail:'No wallet address found!'})
+=======
       console.log("READ ALCHEMY PROVIDER ", readProvider);
       if (!wallet) {
         console.log("Could not retrieve wallet address");
+>>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
         return;
       }
 
       // try creating user first :
       const res = await createUser(wallet);
+<<<<<<< HEAD
+      const reason = res?.reason; 
+      //switch
+      switch (reason) {
+        case 'bad_request':
+          setShowMessage(true);
+          setMessage({ type: 'error', detail: 'Could not create user !, bad request' })
+          break;
+        
+        case 'duplicate':
+          const { acessToken, user } = await login(wallet);
+          console.log("USER : ", user);
+            if (!user) {
+              setShowMessage(true);
+              setMessage({ type: 'error', detail: 'Error: Failed to login user' });
+              break; 
+             }
+          // if login successful , connect
+          connectWallet(wallet, signer, provider, readProvider, acessToken, user);
+          setMessage({ type: 'success', detail: 'Success, wallet login successful' })
+          setShowMessage(true);
+          break; 
+        
+        case 'success':
+          // assign Auth details
+          connectWallet(wallet, signer, provider, readProvider, acessToken, user);
+          setMessage({ type: 'success', detail: 'Success, wallet created successful' })
+          setShowMessage(true);
+          break; 
+        
+        default:
+          setMessage({ type: 'warning', detail: 'Weird!. This is not supposed to happen' })
+          setShowMessage(true);
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', detail: `Error ${err.message}` })
+      setShowMessage(true); 
+      console.error("Wallet connection failed:", err);
+=======
       if (!res) {
         return;
       }
@@ -59,6 +120,7 @@ const App: React.FC = () => {
       return;
     } catch (error) {
       console.error("Wallet connection failed:", error);
+>>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
     }
   };
 
@@ -169,10 +231,18 @@ const App: React.FC = () => {
       </div>
 
       {/* Popup Message */}
+<<<<<<< HEAD
+      {showMessage && (
+        <PopupMessageBox
+          message={message.detail}
+          type={message.type}
+          onClose={() => setShowMessage(false)}
+=======
       {connected && (
         <PopupMessageBox
           message={message}
           onClose={() => setConnected(false)}
+>>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
         />
       )}
     </div>

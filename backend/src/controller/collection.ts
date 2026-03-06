@@ -1,15 +1,15 @@
-import { prisma } from './../lib/prisma';
-import { Request, Response } from 'express';
+import { prisma } from './../lib/prisma.ts';
+import type { Request, Response } from 'express';
 import {
   uploadImageToPinata,
   uploadCollectionMetaData,
-} from '../utils/ifpfs';
-import { fetchAbiFromEtherscan, cache } from '../utils/ABI';
+} from '../utils/ifpfs.ts';
+import { fetchAbiFromEtherscan, cache } from '../utils/ABI.ts';
 import {
   ipfsCIDToHttp,
   fetchIpfsMetadata,
   decodeOnChainTokenURI,
-} from '../utils/ifpfs';
+} from '../utils/ifpfs.ts';
 
 
 // creacte collection

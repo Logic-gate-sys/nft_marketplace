@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { handleListing , handleListingCancelling, handleBuy} from './handlers';
+import { handleListing , handleListingCancelling, handleBuy} from './handlers.ts';
 import { JsonRpcProvider } from "ethers";
 
 
@@ -11,7 +11,6 @@ const RPC_URL = process.env.RPC_URL;
 if (!RPC_URL) {
   throw new Error("RPC_URL is not set in environment variables");
 }
-
 
 export const provider = new JsonRpcProvider(RPC_URL);
 

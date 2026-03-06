@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import Logo from "../../assets/logo.svg";
+<<<<<<< HEAD
+import { MenuOutlined} from "@ant-design/icons";
+=======
 import {
   FileOutlined,
   UserOutlined,
@@ -9,6 +12,7 @@ import {
   AppstoreOutlined,
   QuestionOutlined,
 } from "@ant-design/icons";
+>>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
 import { NavLink } from "react-router-dom";
 
 const navLinks = [
@@ -77,7 +81,6 @@ const Nav: React.FC = () => {
           </div>
         )}
       </div>
-
       {/* Desktop View */}
       <div
         className="hidden md:flex flex-col h-screen bg-os-bg-tertiary border-r border-os-border transition-all duration-300"
