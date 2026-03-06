@@ -1,23 +1,18 @@
-import express, { Application, Request, Response } from 'express'; //CommonJS module
+import express, { type Request, type Response } from 'express'; //CommonJS module
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import userRouter from './route/userRoute';
+import userRouter from './route/userRoute.ts';
 import cookieParser from 'cookie-parser';
-import collectionRouter from './route/collectionRoute';
-import nftRouter from './route/nftRoute';
+import collectionRouter from './route/collectionRoute.ts';
+import nftRouter from './route/nftRoute.ts';
+import morgan from 'morgan'
 
 
 //app configuration
-const app: Application = express();
+const app = express();
 app.use(
-  cors({
-    
-    origin: [
-      "http://127.0.0.1:5173",
-      "http://localhost:5173/",
-      "https://nft-marketplace-yaf4.onrender.com",
-      "https://memora-qb3p.onrender.com"
-    ],   // your Vite 
+  cors({  
+    origin:"*",   // your Vite 
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -28,6 +23,7 @@ app.use(
 app.use(cookieParser());
 app.use(bodyParser.json()); // for graphql json parsing
 app.use(express.json());   // parsing request body as json
+app.use(morgan('combined', {skip: function(req, res){return res.statusCode < 400}})) // skip error logs
 
 
 // users end point : e.g http://localhost:3000/api/users/

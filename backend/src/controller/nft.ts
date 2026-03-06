@@ -1,8 +1,6 @@
-import { error } from "console";
-import { Request, Response } from 'express';
-import { upload_nftMetaData_pinata, uploadImageToPinata } from "../utils/ifpfs";
-import { title } from "process";
-import { prisma } from './../lib/prisma';
+import type { Request, Response } from 'express';
+import { upload_nftMetaData_pinata, uploadImageToPinata } from "../utils/ifpfs.ts";
+import { prisma } from './../lib/prisma.ts';
 
 
 

@@ -1,4 +1,4 @@
-import { createUser, login, refreshToken} from "../controller/user";
+import { createUser, login, refreshToken} from "../controller/user.ts";
 import express from 'express';
 const { Router } = express;
 const userRouter = Router();

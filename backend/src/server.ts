@@ -1,5 +1,5 @@
-import app from './app';
-import { startMarketPlaceListeners } from './blockchain';
+import app from './app.ts';
+import { startMarketPlaceListeners } from './blockchain/marketplace.listener.ts';
 
 let PORT = process.env.PORT || 3000;
 

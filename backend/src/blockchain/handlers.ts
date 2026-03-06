@@ -1,7 +1,7 @@
-import { Contract, ethers, Provider } from 'ethers';
-import { prisma } from './../lib/prisma';
-import { fetchAbiFromEtherscan } from '../utils/ABI';
-import { provider } from './marketplace.listener';
+import { Contract, ethers, JsonRpcProvider as Provider } from 'ethers';
+import { prisma } from './../lib/prisma.ts';
+import { fetchAbiFromEtherscan } from '../utils/ABI.ts';
+import { provider } from './marketplace.listener.ts';
 
 export const r_contract = async (address: string) => {
   const abi = await fetchAbiFromEtherscan(address);
