@@ -1,28 +1,17 @@
 import { pinata } from '../config/config.ts';
+import { Web3Storage, File } from 'web3.storage'; 
 
+const token = process.env.WEB3_STORAGE_API_KEY; 
 
 //GATE WAYS
 const CURRENT_IPFSGATEWAY = 'https://dweb.link/ipfs/';
 const CURRENT_IPFSGATEWA = 'https://gateway.pinata.cloud/ipfs/';
 const GATE_IPFS = 'https://ipfs.io/ipfs/';
 
-//-----------------------  Define the argument types ------------------------------
-export const uploadImageToPinata = async (
-  blobBody: any,
-  original_name: string,
-  file_mime: string
-): Promise<string> => {
-  const blob = new Blob([blobBody], { type: file_mime });
 
-  const file = new File([blob], original_name, { type: file_mime });
-  const upload: any = await pinata.upload.public.file(file);
-  const cid = upload.cid as string;
-  if (!cid) throw new Error('CID missing from Pinata response');
-  return cid;
-};
 
 // ------off-chain nft metadata upload ----------------------
-export const upload_nft_metadata = async (
+export const uploadNFTMetaData = async (
   name: string,
   id: number,
   description: string,
@@ -48,22 +37,22 @@ export const upload_nft_metadata = async (
     const metadataBlob = new Blob([JSON.stringify(metadata)], {
       type: 'application/json',
     });
-    const file = new File([metadataBlob], `${name}.json`, {
-      type: 'application/json',
-    });
+    const file = [new File([metadataBlob], `${name}.json`, { type: 'application/json', })]
 
-    const upload = await pinata.upload.public.file(file);
-    if (!upload?.cid) throw new Error('Upload failed.');
-    const token_uri = `ipfs://${upload.cid}`;
+    const cid = await uploadFileToWeb3Store(file);
+    if (!cid) throw new Error('Upload failed.');
+    const token_uri = `ipfs://${cid}`;
+
+    // return token url
     return token_uri;
   } catch (error) {
-    console.error('Upload error:', error);
     throw new Error('Failed to upload metadata');
   }
 };
 
-// ------------------------ upload collection metadat
 
+
+// ------------------------ upload collection metadat
 export const uploadCollectionMetaData = async (
   type: string ,
   contractAddress: string,
@@ -102,7 +91,6 @@ export const uploadCollectionMetaData = async (
     return col_uri;
   } catch (error) {
     throw error;
-    return;
   }
 };
 
@@ -125,6 +113,22 @@ export const upload_nftMetaData_pinata = async (image:string, attributes: any) =
   }
 };
 
+export async function uploadFileToWeb3Store(files: File[]) {
+  try {
+    // upload and return cid
+    const storage = Web3Storage({token})
+    const { cid } = await storage.put(files); 
+    if (!cid) return 'failed'; 
+
+    // return files cid 
+    return cid; 
+  } catch (err: unknown) {
+    console.error('Failed to upload to web3 storage')
+  }
+}
+
+
+
 // Convert ipfs:// URI to HTTP URL
 export const ipfsToHttp = (ipfsUri: string) => {
   // Remove ipfs:// and add /ipfs/ path
@@ -144,6 +148,12 @@ export const fetchIpfsMetadata = async (ipfsUri: string) => {
 
   return await res.json();
 }
+
+
+
+
+
+
 
 // Convert CID to HTTP URL
 export const ipfsCIDToHttp = (cid: string) => {

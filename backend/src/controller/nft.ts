@@ -1,11 +1,10 @@
 import type { Request, Response } from 'express';
-import { upload_nftMetaData_pinata, uploadImageToPinata } from "../utils/ifpfs.ts";
+import { upload_nftMetaData_pinata, uploadImageToWeb3Storage } from "../utils/ifpfs.ts";
 import { prisma } from './../lib/prisma.ts';
 
 
 
 export const mintNFT = async (req: Request, res: Response) => {
-
     try {
         //retrieve fields needed form minting
         const { col_id, token_id, owner_id, nft_uri } = req.body;
@@ -27,7 +26,6 @@ export const mintNFT = async (req: Request, res: Response) => {
         console.error(err);
         return;
     }
-
 }
 
 
@@ -41,7 +39,7 @@ export const uploadMintOffChainData = async (req: Request, res: Response) => {
     try {
         // get file details
         const { originalname, mimetype } = file;
-        const image_cid = await uploadImageToPinata(file.buffer, originalname, mimetype);
+        const image_cid = await uploadImageToWeb3Storage(file.buffer, originalname, mimetype);
         // if file upload fails
         if (!image_cid) {
             return res.status(403).json({

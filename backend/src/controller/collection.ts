@@ -1,7 +1,7 @@
 import { prisma } from './../lib/prisma.ts';
 import type { Request, Response } from 'express';
 import {
-  uploadImageToPinata,
+  uploadImageToWeb3Storage,
   uploadCollectionMetaData,
 } from '../utils/ifpfs.ts';
 import { fetchAbiFromEtherscan, cache } from '../utils/ABI.ts';
@@ -12,10 +12,10 @@ import {
 } from '../utils/ifpfs.ts';
 
 
-// creacte collection
+
 export const create_offchain_collection = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   // get fields require to create collection
   const {
@@ -40,10 +40,10 @@ export const create_offchain_collection = async (
   const logo = files[1]; // logo
 
   //image uri
-  const cover_uri = await uploadImageToPinata(
+  const cover_uri = await uploadImageToWeb3Storage(
     cover.buffer,
     cover.originalname,
-    cover.mimetype
+    cover.mimetype,
   );
   //upload file to ipfs and get the cid
   if (!cover_uri) {
@@ -51,10 +51,10 @@ export const create_offchain_collection = async (
       .status(403)
       .json({ error: 'Upload failed', message: 'Could not upload file 1' });
   }
-  const logo_uri = await uploadImageToPinata(
+  const logo_uri = await uploadImageToWeb3Storage(
     logo.buffer,
     logo.originalname,
-    logo.mimetype
+    logo.mimetype,
   );
   if (!logo_uri) {
     return res.status(403).json({
@@ -73,7 +73,7 @@ export const create_offchain_collection = async (
     category,
     royalties,
     cover_uri,
-    logo_uri
+    logo_uri,
   );
   if (!col_uri) {
     return res.json({ error: 'Failed to upload Contract metadata to ifpfs' });
@@ -131,9 +131,9 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
     let orderBy: any = { createdAt: 'desc' };
     if (sortBy === 'oldest') orderBy = { createdAt: 'asc' };
 
-    // Return cache response 
+    // Return cache response
     if (!somethingChanged && cache.has('allCollections')) {
-      console.log("GETTING DATA FROM TTL CACHE ");
+      console.log('GETTING DATA FROM TTL CACHE ');
       const response_data = cache.get('allCollections');
       return res.json(response_data);
     }
@@ -166,109 +166,109 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
     const totalCollections = await prisma.collection.count({
       where: whereClause,
     });
-    
-      // Transform collections
-      const transformedCollections = await Promise.all(
-        collections.map(async (col) => {
-          // store in cache for a short time like 15 mins
 
-          const meta : any = await fetchIpfsMetadata(col.col_uri);
+    // Transform collections
+    const transformedCollections = await Promise.all(
+      collections.map(async (col) => {
+        // store in cache for a short time like 15 mins
 
-          const transformedNfts = await Promise.all(
-            (col.Nft ?? []).map(async (nft) => {
-              // OFF-CHAIN NFT
-              if (meta.type === 'offchain') {
-                if (!nft.uri) {
-                  return;
-                }
-                const metadata: any = await fetchIpfsMetadata(nft.uri);
+        const meta: any = await fetchIpfsMetadata(col.col_uri);
 
-                return {
-                  id: nft.id,
-                  tokenId: nft.token_id,
-                  uri: ipfsCIDToHttp(metadata.image) ?? '',
-                  status: nft?.status,
-                  basePrice: nft?.base_price,
-                  currentPrice: nft?.current_price,
-                  attributes: metadata.attributes ?? {},
-                  ownerId: nft.User.id,
-                  ownerWallet: nft.User.wallet,
-                  ownerName: nft.User.username ?? 'Unnamed',
-                };
-              }
-
-              // ON-CHAIN NFT
+        const transformedNfts = await Promise.all(
+          (col.Nft ?? []).map(async (nft) => {
+            // OFF-CHAIN NFT
+            if (meta.type === 'offchain') {
               if (!nft.uri) {
                 return;
               }
-              // decodec
-              const decoded = decodeOnChainTokenURI(nft.uri);
+              const metadata: any = await fetchIpfsMetadata(nft.uri);
 
-              // URL
               return {
                 id: nft.id,
                 tokenId: nft.token_id,
-                uri: decoded.image ?? '',
+                uri: ipfsCIDToHttp(metadata.image) ?? '',
                 status: nft?.status,
                 basePrice: nft?.base_price,
                 currentPrice: nft?.current_price,
-                attributes: decoded.metadata ?? {},
+                attributes: metadata.attributes ?? {},
                 ownerId: nft.User.id,
                 ownerWallet: nft.User.wallet,
                 ownerName: nft.User.username ?? 'Unnamed',
               };
-            })
-          );
-          return {
-            id: col.id.toString(),
-            type: meta?.type,
-            name: meta.name ?? 'Unnamed Collection',
-            cover: ipfsCIDToHttp(meta.cover) ?? '',
-            logo: ipfsCIDToHttp(meta.logo) ?? '',
-            description: meta.description ?? '',
-            symbol: meta.symbol ?? '',
-            category: meta.category ?? 'other',
-            contractAddress: meta.contractAddress ?? '',
-            items: col._count.Nft,
-            // listedItems: col._count.Listings,
-            nfts: transformedNfts,
-            floorPrice: 0,
-            volume: 0,
-            creator: col.User.wallet,
-            creatorName: col.User.username ?? 'Unnamed',
-            creatorId: col.User.id,
-            createdAt: col.createdAt,
-          };
-        })
-      );
+            }
 
-      // Sort by items if requested
-      if (sortBy === 'items') {
-        transformedCollections.sort((a, b) => b.items - a.items);
-      }
+            // ON-CHAIN NFT
+            if (!nft.uri) {
+              return;
+            }
+            // decodec
+            const decoded = decodeOnChainTokenURI(nft.uri);
 
-      // Pagination metadata
-      const totalPages = Math.ceil(totalCollections / limitNum);
-      const hasNextPage = pageNum < totalPages;
+            // URL
+            return {
+              id: nft.id,
+              tokenId: nft.token_id,
+              uri: decoded.image ?? '',
+              status: nft?.status,
+              basePrice: nft?.base_price,
+              currentPrice: nft?.current_price,
+              attributes: decoded.metadata ?? {},
+              ownerId: nft.User.id,
+              ownerWallet: nft.User.wallet,
+              ownerName: nft.User.username ?? 'Unnamed',
+            };
+          }),
+        );
+        return {
+          id: col.id.toString(),
+          type: meta?.type,
+          name: meta.name ?? 'Unnamed Collection',
+          cover: ipfsCIDToHttp(meta.cover) ?? '',
+          logo: ipfsCIDToHttp(meta.logo) ?? '',
+          description: meta.description ?? '',
+          symbol: meta.symbol ?? '',
+          category: meta.category ?? 'other',
+          contractAddress: meta.contractAddress ?? '',
+          items: col._count.Nft,
+          // listedItems: col._count.Listings,
+          nfts: transformedNfts,
+          floorPrice: 0,
+          volume: 0,
+          creator: col.User.wallet,
+          creatorName: col.User.username ?? 'Unnamed',
+          creatorId: col.User.id,
+          createdAt: col.createdAt,
+        };
+      }),
+    );
+
+    // Sort by items if requested
+    if (sortBy === 'items') {
+      transformedCollections.sort((a, b) => b.items - a.items);
+    }
+
+    // Pagination metadata
+    const totalPages = Math.ceil(totalCollections / limitNum);
+    const hasNextPage = pageNum < totalPages;
     const hasPrevPage = pageNum > 1;
-    
-    const Response_data = {
-        success: true,
-        data: transformedCollections,
-        pagination: {
-          page: pageNum,
-          limit: limitNum,
-          total: totalCollections,
-          totalPages,
-          hasNextPage,
-          hasPrevPage,
-        }
-     }
 
-      // Cache all res
-    cache.set("allCollections", Response_data, {ttl: 15 * 60 * 1000 });
-      // return res after fetching 
-   return res.json(Response_data);
+    const Response_data = {
+      success: true,
+      data: transformedCollections,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: totalCollections,
+        totalPages,
+        hasNextPage,
+        hasPrevPage,
+      },
+    };
+
+    // Cache all res
+    cache.set('allCollections', Response_data, { ttl: 15 * 60 * 1000 });
+    // return res after fetching
+    return res.json(Response_data);
   } catch (error: any) {
     console.error('Error fetching all collections:', error);
     res.status(500).json({
@@ -281,7 +281,7 @@ export const fetchAllCollections = async (req: Request, res: Response) => {
 
 export const fetchUserCollections = async (req: any, res: Response) => {
   try {
-     // Detect change in nft or collection
+    // Detect change in nft or collection
     const somethingChanged = await somethingHasChange();
 
     const userId = req.user?.userId;
@@ -296,11 +296,12 @@ export const fetchUserCollections = async (req: any, res: Response) => {
       });
     }
 
-    if (!somethingChanged && cache.has("userCollections")) {
-      console.log("RETRIEVING USER COLLECTIONS FROM TTL CACHE");
+    if (!somethingChanged && cache.has('userCollections')) {
+      console.log('RETRIEVING USER COLLECTIONS FROM TTL CACHE');
 
-      return res.status(200).json(cache.get("userCollections"));
+      return res.status(200).json(cache.get('userCollections'));
     }
+
     const collections = await prisma.collection.findMany({
       where: { user_id: userId },
       include: {
@@ -324,14 +325,14 @@ export const fetchUserCollections = async (req: any, res: Response) => {
     });
 
     // update nft and collection status
-    await updateChangeStatus()
+    await updateChangeStatus();
     const totalCollections = await prisma.collection.count({
       where: { user_id: userId },
     });
 
     const transformedCollections = await Promise.all(
       collections.map(async (col) => {
-        const meta:any = await fetchIpfsMetadata(col.col_uri);
+        const meta: any = await fetchIpfsMetadata(col.col_uri);
 
         const transformedNfts = await Promise.all(
           (col.Nft ?? []).map(async (nft) => {
@@ -340,7 +341,7 @@ export const fetchUserCollections = async (req: any, res: Response) => {
               if (!nft.uri) {
                 return;
               }
-              const metadata : any = await fetchIpfsMetadata(nft.uri);
+              const metadata: any = await fetchIpfsMetadata(nft.uri);
 
               return {
                 id: nft.id,
@@ -376,7 +377,7 @@ export const fetchUserCollections = async (req: any, res: Response) => {
               ownerWallet: nft.User.wallet,
               ownerName: nft.User.username ?? 'Unnamed',
             };
-          })
+          }),
         );
 
         return {
@@ -398,17 +399,18 @@ export const fetchUserCollections = async (req: any, res: Response) => {
           creatorId: col.User.id,
           createdAt: col.createdAt,
         };
-      })
+      }),
     );
 
     if (sortBy === 'items') {
       transformedCollections.sort((a, b) => b.items - a.items);
     }
-    const Response_data = {success: true,
+    const Response_data = {
+      success: true,
       data: transformedCollections,
-      pagination: { total: totalCollections }
-    }
-    cache.set("userCollections", Response_data, {ttl: 15 * 60 *1000 });
+      pagination: { total: totalCollections },
+    };
+    cache.set('userCollections', Response_data, { ttl: 15 * 60 * 1000 });
     return res.json(Response_data);
   } catch (error) {
     console.error('Error fetching user collections:', error);
@@ -426,15 +428,20 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
       where: { id: collectionId },
       include: {
         Nft: {
-          where: {changed: true}
-        }
-      }
+          where: { changed: true },
+        },
+      },
     });
     if (!col) {
-      return res.status(404).json({success: false,  message:`No collection found for id ${collectionId}`})
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: `No collection found for id ${collectionId}`,
+        });
     }
-    const somethingChanged:boolean = (col.changed || (col.Nft.length ?? 0) > 0) ;
-    
+    const somethingChanged: boolean = col.changed || (col.Nft.length ?? 0) > 0;
+
     if (!collectionId) {
       return res.status(400).json({
         success: false,
@@ -443,7 +450,7 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
       });
     }
     if (!somethingChanged && cache.has(collectionId.toString())) {
-      console.log("RETRIEVING COLLECTION BY ID FROM TTL CACHE");
+      console.log('RETRIEVING COLLECTION BY ID FROM TTL CACHE');
       return res.status(200).json(cache.get(collectionId.toString()));
     }
     const collection = await prisma.collection.findUnique({
@@ -482,25 +489,25 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
         message: 'Collection not found',
       });
     }
-    // update changed status 
+    // update changed status
     await prisma.collection.update({
       where: { id: collectionId },
       data: {
         changed: false,
         Nft: {
           updateMany: {
-            where: {changed: true},
+            where: { changed: true },
             data: {
-              changed: false
-            }
-          }
-        }
-      }
+              changed: false,
+            },
+          },
+        },
+      },
     });
 
     // Fetch IPFS metadata
-    const meta :any= await fetchIpfsMetadata(collection.col_uri);
-    
+    const meta: any = await fetchIpfsMetadata(collection.col_uri);
+
     const transformedNfts = await Promise.all(
       (collection.Nft ?? []).map(async (nft) => {
         // OFF-CHAIN NFT
@@ -508,7 +515,7 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
           if (!nft.uri) {
             return;
           }
-          const metadata:any = await fetchIpfsMetadata(nft.uri);
+          const metadata: any = await fetchIpfsMetadata(nft.uri);
 
           return {
             id: nft.id,
@@ -530,7 +537,7 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
         }
         // decodec
         const decoded = decodeOnChainTokenURI(nft.uri);
-        
+
         // URL
         return {
           id: nft.id,
@@ -544,7 +551,7 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
           ownerWallet: nft.User.wallet,
           ownerName: nft.User.username ?? 'Unnamed',
         };
-      })
+      }),
     );
 
     const transformedCollection = {
@@ -566,9 +573,9 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
       creatorId: collection.User.id,
       createdAt: collection.createdAt,
     };
-    const Response_data = { success: true, data: transformedCollection }
+    const Response_data = { success: true, data: transformedCollection };
     // set cache
-    cache.set(collectionId.toString(), Response_data, {ttl: 15 * 60 * 1000})
+    cache.set(collectionId.toString(), Response_data, { ttl: 15 * 60 * 1000 });
     return res.json(Response_data);
   } catch (error) {
     console.error('Error fetching collection:', error);
@@ -580,13 +587,6 @@ export const fetchCollectionById = async (req: Request, res: Response) => {
   }
 };
 
-// fech collction abi
-/**
- *
- * @param req ; request object that the user has been attached to after authentication
- * @param res  result that is returned after request executes successfully
- * @returns
- */
 export const fetchCollectionABI = async (req: any, res: Response) => {
   try {
     const { contractAddress } = req.query;
@@ -620,26 +620,27 @@ export const fetchCollectionABI = async (req: any, res: Response) => {
   }
 };
 
-
 export const somethingHasChange = async () => {
   const cols = await prisma.collection.findFirst({
     where: { changed: true },
     include: {
       Nft: {
         where: {
-          changed: true
-        }
-      }
-    }
-  })
+          changed: true,
+        },
+      },
+    },
+  });
   // has something changed
   if (!cols) {
-    console.log("No collection has changed = true or it's nfts has changed =true");
+    console.log(
+      "No collection has changed = true or it's nfts has changed =true",
+    );
     return;
   }
-  const nftOrCollectionChanged = cols.changed || (cols.Nft.length ?? 0) > 0; 
+  const nftOrCollectionChanged = cols.changed || (cols.Nft.length ?? 0) > 0;
   return nftOrCollectionChanged;
-}
+};
 
 export const updateChangeStatus = async () => {
   try {
@@ -647,19 +648,19 @@ export const updateChangeStatus = async () => {
       // collection update
       prisma.collection.updateMany({
         where: {
-          changed: true
-        }, 
+          changed: true,
+        },
         data: {
-          changed: false
-        }
+          changed: false,
+        },
       }),
       // nft update
       prisma.nft.updateMany({
-        where: {changed: true},
-        data: { changed: false }
-      })
+        where: { changed: true },
+        data: { changed: false },
+      }),
     ]);
   } catch (err: any) {
-    console.log("Error: ", err.message);
+    console.log('Error: ', err.message);
   }
-}
+};

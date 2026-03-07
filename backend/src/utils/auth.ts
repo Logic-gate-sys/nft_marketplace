@@ -4,12 +4,7 @@ interface TokenPayload{
   userId: number;
   wallet: string;
 }
-/**
- * 
- * @param user : the specific user acessing the endpoint
- * @param message 
- * @returns  returns an acess token 
- */
+
 export const signAcessToken = (wallet: string, userId:number ) => {
   return jwt.sign(
     {
