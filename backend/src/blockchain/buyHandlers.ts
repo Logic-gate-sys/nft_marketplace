@@ -1,7 +1,7 @@
 import { ethers} from 'ethers';
-import { prisma } from '../lib/prisma.ts';
-import { provider } from '../utils/jsonRPC.ts'
-import { getTokenURI } from '../utils/blockchain.ts';
+import { prisma } from '@/lib/prisma.ts';
+import { provider } from '@/utils/jsonRPC.ts'
+import { getTokenURI } from '@/utils/blockchain.ts';
 
 
 export const handleBuy = async (

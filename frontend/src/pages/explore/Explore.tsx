@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchAllCollections } from '../../utils/fetchCollections';
-import { 
-  NFTCard, 
-  CardGrid,
-  SectionHeader,
-  PopupMessageBox,
-  Loader,
-  Spinner,
-} from '../../components';
-import { getWriteContractInstance , BuyToken} from '../../ether/contract_interaction';
-import { MARKETPLACE_SEPOLIA_ABI, MARKETPLACE_SEPOLIA_ADDRESS } from '../../../../shared/constants/contracts';
-import { useAuth } from '../../context/AuthContext';
+import { fetchAllCollections } from '@utils/fetchCollections';
+import {  NFTCard,  CardGrid, SectionHeader, PopupMessageBox, Loader, Spinner,} from '@components/index';
+import { getWriteContractInstance , BuyToken} from '@ether-wallet/contract_interaction';
+import { MARKETPLACE_SEPOLIA_ABI, MARKETPLACE_SEPOLIA_ADDRESS } from '@constants/contracts';
+import { useAuth } from '@context/AuthContext';
+
+
+
 
 const Explore: React.FC = () => {
   const navigate = useNavigate();

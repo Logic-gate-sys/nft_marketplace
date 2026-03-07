@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { PopupMessageBoxProps } from './../../services/types'
+import { PopupMessageBoxProps } from '@my-types/'
 
 export const PopupMessageBox: React.FC<PopupMessageBoxProps> = ({ 
   message, 
@@ -133,4 +133,3 @@ export const PopupMessageBox: React.FC<PopupMessageBoxProps> = ({
   );
 };
 
-export default PopupMessageBox;

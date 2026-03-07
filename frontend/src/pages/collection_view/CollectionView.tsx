@@ -1,14 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { 
-  NFTCard, 
-  CardGrid,
-  PageHeader,
-  TabNavigation,
-  EmptyState,
-} from '../../components';
+import {  NFTCard,  CardGrid, PageHeader, TabNavigation, EmptyState} from '@components/index';
 import { collections, nfts } from '../../data/sampledata';
 import type { Tab } from '../../components/sections/TabNavigation';
+
+
+
+
 
 const CollectionView: React.FC = () => {
   const { collectionId } = useParams<{ collectionId: string }>();

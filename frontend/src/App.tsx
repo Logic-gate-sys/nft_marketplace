@@ -8,7 +8,6 @@ import { createUser, login } from "./services/auth";
 import { Nav, PopupMessageBox } from "./components";
 import { useAuth } from "./context/AuthContext";
 import StudioCollectionView from "./pages/collection_view/StudioCollectionView";
-<<<<<<< HEAD
 
 
 type Message = {
@@ -21,39 +20,20 @@ const App: React.FC = () => {
   const { wallet, user, connectWallet, token } = useAuth();
   const [message, setMessage] = useState<Message>({ type: 'info', detail: 'Waiting' });
 
-=======
-import { ConsoleSqlOutlined } from "@ant-design/icons";
-
-const App: React.FC = () => {
-  const [connected, setConnected] = useState<boolean>(false);
-  const { wallet, user, connectWallet, token } = useAuth();
-
-  const message = `Wallet connection successful! Close this button to continue`;
-  useEffect(() => {
-    console.log("ACESS TOKEN FROM AUTH", token);
-  }, [token]);
->>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
 
   const handleWalletConnect = async (): Promise<void> => {
     try {
       // retrieve ethers details
       const { readProvider, provider, signer, wallet } = await connectUserWallet();
-<<<<<<< HEAD
       // console.log("READ ALCHEMY PROVIDER ", readProvider);
       if (!wallet) {
         setShowMessage(true)
          setMessage({type:'error', detail:'No wallet address found!'})
-=======
-      console.log("READ ALCHEMY PROVIDER ", readProvider);
-      if (!wallet) {
-        console.log("Could not retrieve wallet address");
->>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
         return;
       }
 
       // try creating user first :
       const res = await createUser(wallet);
-<<<<<<< HEAD
       const reason = res?.reason; 
       //switch
       switch (reason) {
@@ -91,36 +71,6 @@ const App: React.FC = () => {
       setMessage({ type: 'error', detail: `Error ${err.message}` })
       setShowMessage(true); 
       console.error("Wallet connection failed:", err);
-=======
-      if (!res) {
-        return;
-      }
-      console.log("Creating result : ", res);
-      if (res.reason == "bad_request") {
-        console.log("Could not create user !, bad request");
-        return;
-      } else if (res.reason === "duplicate") {
-        console.log("User already exist ");
-        // login rather
-        let { acessToken, user } = await login(wallet);
-        console.log("ACESS TOKEN : ", acessToken);
-        if (acessToken.isNull) {
-          user = await createUser(wallet);
-          if (!user) {
-            console.error("Could not create new user");
-            return;
-          }
-        }
-        // assign Auth details
-        connectWallet(wallet, signer, provider,readProvider, acessToken, user);
-        setConnected(true);
-      }
-      // safely return
-      setConnected(true);
-      return;
-    } catch (error) {
-      console.error("Wallet connection failed:", error);
->>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
     }
   };
 
@@ -231,18 +181,11 @@ const App: React.FC = () => {
       </div>
 
       {/* Popup Message */}
-<<<<<<< HEAD
       {showMessage && (
         <PopupMessageBox
           message={message.detail}
           type={message.type}
           onClose={() => setShowMessage(false)}
-=======
-      {connected && (
-        <PopupMessageBox
-          message={message}
-          onClose={() => setConnected(false)}
->>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
         />
       )}
     </div>

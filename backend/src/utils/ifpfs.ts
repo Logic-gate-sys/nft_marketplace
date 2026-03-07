@@ -1,7 +1,7 @@
 import { pinata } from '../config/config.ts';
-import { Web3Storage, File } from 'web3.storage'; 
-
-const token = process.env.WEB3_STORAGE_API_KEY; 
+import { Web3Storage, File, getFilesFromPath } from 'web3.storage'; 
+import { env } from '../../env.ts'
+const token = env.WEB3_STORAGE_API_KEY; 
 
 //GATE WAYS
 const CURRENT_IPFSGATEWAY = 'https://dweb.link/ipfs/';
@@ -116,14 +116,14 @@ export const upload_nftMetaData_pinata = async (image:string, attributes: any) =
 export async function uploadFileToWeb3Store(files: File[]) {
   try {
     // upload and return cid
-    const storage = Web3Storage({token})
+    console.log(`TOKEN: ${token}`)
+    const storage = new Web3Storage({ token })
     const { cid } = await storage.put(files); 
-    if (!cid) return 'failed'; 
-
+    if (!cid) return 'File upload failed!'; 
     // return files cid 
     return cid; 
   } catch (err: unknown) {
-    console.error('Failed to upload to web3 storage')
+    console.error(`Failed to upload to web3 storage: ${err.message}`)
   }
 }
 

@@ -1,20 +1,10 @@
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
-import {
-  fetchContractABI,
-  getWriteContractInstance,
-  UnlistToken,
-} from "../../ether/contract_interaction";
-import { useAuth } from "../../context/AuthContext";
-import {
-  approveMarketPlace,
-  listToken,
-} from "../../ether/contract_interaction";
-import {
-  MARKETPLACE_SEPOLIA_ABI,
-  MARKETPLACE_SEPOLIA_ADDRESS,
-} from "../../../../shared/constants/contracts";
-import { Loader, Spinner, PopupMessageBox } from "../index";
+import { fetchContractABI, getWriteContractInstance, UnlistToken} from "@ether-wallet/contract_interaction";
+import { useAuth } from "@context/AuthContext";
+import { approveMarketPlace, listToken} from "@ether-wallet/contract_interaction";
+import { MARKETPLACE_SEPOLIA_ABI,MARKETPLACE_SEPOLIA_ADDRESS} from "@constants/contracts";
+import { Loader, Spinner, PopupMessageBox }  from '@components/index'
 
 // **NEW: Price Modal Component**
 interface PriceModalProps {

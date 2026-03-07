@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Login from "../assets/main_background.svg";
 import Todo from "../../assets/todo.svg";
-import { CollectionsCarousel } from "../../components/carousel/ColCarousel";
+import { CollectionsCarousel } from "@components/carousel/ColCarousel";
 
 interface OnboardingStep {
   title: string;

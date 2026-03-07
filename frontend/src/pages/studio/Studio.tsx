@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { CollectionFormData, FetchedCollection } from "../../services/types";
 import { useNavigate } from "react-router-dom";
-import {
-  CollectionCard,
-  NFTCard,
-  CardGrid,
-  PageHeader,
-  TabNavigation,
-  SectionHeader,
-  EmptyState,
-  CreateCollectionForm,
-  PopupMessageBox,
-} from "../../components";
+import {CollectionCard,NFTCard,CardGrid,PageHeader,TabNavigation,SectionHeader,EmptyState,CreateCollectionForm,PopupMessageBox,
+} from "@components/index";
 import type { Tab } from "../../components/sections/TabNavigation";
 import { fetchUserCollection } from "../../utils/fetchCollections";
 import { useAuth } from "../../context/AuthContext";
+
+
+
 
 const Studio: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("collections");

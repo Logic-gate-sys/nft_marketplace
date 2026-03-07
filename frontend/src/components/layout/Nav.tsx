@@ -1,18 +1,6 @@
 import React, { useState } from "react";
 import Logo from "../../assets/logo.svg";
-<<<<<<< HEAD
 import { MenuOutlined} from "@ant-design/icons";
-=======
-import {
-  FileOutlined,
-  UserOutlined,
-  SettingOutlined,
-  MenuOutlined,
-  HomeOutlined,
-  AppstoreOutlined,
-  QuestionOutlined,
-} from "@ant-design/icons";
->>>>>>> db7aaecd5b66d9beab530d02b1fe7dfd501dd197
 import { NavLink } from "react-router-dom";
 
 const navLinks = [

@@ -1,6 +1,8 @@
 {
+  "include": ["src/"],
+  "exclude": ["node_modules"],
   "compilerOptions": {
-    "module":"ESNext",
+    "module": "ESNext",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": ["DOM", "ESNext"],
@@ -10,8 +12,19 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  },
-  "include": ["src/","./"],
-  "exclude": ["node_modules"]
+    "forceConsistentCasingInFileNames": true,
+
+    // custom imports and alias
+    "baseUrl": "./src",
+    "paths": {
+      "@components/*": ["./components/*"], // Added the 's'
+      "@pages/*": ["./pages/*"],
+      "@hooks/*": ["./hooks/*"],
+      "@context/*": ["./context/*"],
+      "@ether-wallet/*": ["./ether/*"],
+      "@constants/*":["./constants/*"],
+      "@my-types/*":["./services/types.ts"],
+      "@utils/*":["./utils/*"]
+    }
+  }
 }

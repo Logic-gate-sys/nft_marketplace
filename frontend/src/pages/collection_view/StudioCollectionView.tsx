@@ -1,20 +1,17 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { PriceModal } from "../../components/ui/PriceModal";
-
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { getWriteContractInstance, UnlistToken } from "../../ether/contract_interaction";
-import { MARKETPLACE_SEPOLIA_ABI, MARKETPLACE_SEPOLIA_ADDRESS } from "../../../../shared/constants/contracts";
-import {
-  NFTCard,
-  CardGrid,
-  TabNavigation,
-  EmptyState,
-  MintForm,
-} from "../../components";
+// import { getWriteContractInstance, UnlistToken } from "@ether-wallet/contract_interaction";
+// import { MARKETPLACE_SEPOLIA_ABI, MARKETPLACE_SEPOLIA_ADDRESS } from "@constants/contracts";
+import { NFTCard, CardGrid, TabNavigation, EmptyState, MintForm,} from "@components/index";
 import type { Tab } from "../../components/sections/TabNavigation";
-import { FetchedCollection } from "../../services/types";
+import { FetchedCollection } from "@my-types/";
 import { fetchCollectionById } from "../../utils/fetchCollections";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@context/AuthContext";
+
+
+
+
 
 const StudioCollectionView: React.FC = () => {
   //dynamic collection url id

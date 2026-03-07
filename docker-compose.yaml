@@ -1,0 +1,20 @@
+services:
+  api:
+    build: backend
+    ports:
+      - "8080:8080"
+      
+    depends-on:
+      - db
+
+    environment:
+      POSTGRES_CONNECTION_STRING: postgresql://db:5432/postgres
+    db:
+      image: postgres:17-alpine
+      environment:
+        POSTGRES_PASSWORD: my_password
+
+  web:
+    build: frontend
+    ports:
+      - "8081:80"

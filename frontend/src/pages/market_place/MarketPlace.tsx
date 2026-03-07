@@ -1,16 +1,11 @@
 import React, { useEffect, useState } from "react";
-import {
-  NFTCard,
-  CollectionCard,
-  CardGrid,
-  PageHeader,
-  TabNavigation,
-  FilterBar,
-  StatsBar,
-} from "../../components";
-import { fetchAllCollections } from "../../utils/fetchCollections";
-import type { Tab } from "../../components/sections/TabNavigation";
-import { FetchedCollection } from "../../services/types";
+import { NFTCard, CollectionCard, CardGrid, PageHeader, TabNavigation, FilterBar, StatsBar} from "@components/index";
+import { fetchAllCollections } from "@utils/fetchCollections";
+import type { Tab } from "@components/sections/TabNavigation";
+import { FetchedCollection } from "@my-types/";
+
+
+
 
 const MarketPlace: React.FC = () => {
   const [collections, setCollections] = useState<FetchedCollection[]>([]);

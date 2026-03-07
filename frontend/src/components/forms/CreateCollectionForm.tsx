@@ -5,7 +5,7 @@ import {
 } from "../../services/types";
 import { refreshToken } from "../../services/auth";
 import { useAuth } from "../../context/AuthContext";
-import PopupMessageBox from "./../msg_boxes/PopUpMessageBox"
+import {PopupMessageBox} from "@components/index"
 
 const CreateCollectionForm: React.FC<CreateCollectionFormProps> = ({
   isOpen,
