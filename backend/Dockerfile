@@ -7,10 +7,8 @@ RUN npm ci
 COPY . .
 
 #RUNNER 
-FROM alpine:latest
-# create node user 
-RUN apk add --update nodejs
-RUN addgroup -S node && adduser -S node -G node
+FROM node:alpine
+
 USER node 
 #make working directory 
 WORKDIR /app

@@ -1,20 +1,28 @@
 services:
+  #BACKEND SERVICE 
   api:
     build: backend
     ports:
       - "8080:8080"
-      
-    depends-on:
+    
+    depends_on:
       - db
+    #take content of env file in the backend directory
+    env_file:
+      - ./backend/.env
 
-    environment:
-      POSTGRES_CONNECTION_STRING: postgresql://db:5432/postgres
-    db:
-      image: postgres:17-alpine
-      environment:
-        POSTGRES_PASSWORD: my_password
+  
+  #DATABASE SERVICE
+  db:
+    image: postgres:17-alpine
+    env_file:
+      - ./backend/.env 
 
+
+  #FRONTEND SERVICE
   web:
     build: frontend
     ports:
       - "8081:80"
+    env_file:
+      - ./frontend/.env
