@@ -7,14 +7,13 @@ RUN npm ci
 COPY . .
 
 #RUNNER 
-FROM alpine:lastet
+FROM alpine:latest
 # create node user 
 RUN apk add --update nodejs
-RUN add group -S node && adduser -S node -G node
+RUN addgroup -S node && adduser -S node -G node
 USER node 
 #make working directory 
-RUN mkdir /usr/nft-app 
-WORKDIR /usr/nft-app
+WORKDIR /app
 #copy file build files into working directory 
 COPY --from=node-builder --chown=node:node /build .
 
